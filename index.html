@@ -403,11 +403,11 @@
   .ring-center .l{font-size:var(--fs-xs);color:var(--ink-soft);margin-top:2px;}
 
   /* ============================= METRONOME ============================= */
-  .pendulum-wrap{width:100px;height:140px;position:relative;flex-shrink:0;}
-  .pendulum-body{position:absolute;left:50%;top:0;width:0;height:118px;}
-  .pendulum-arm{position:absolute;left:0;top:0;width:5px;height:112px;background:linear-gradient(180deg, var(--brass-light), var(--ink));transform-origin:top center;transform:rotate(-22deg);border-radius:3px;transition:transform 0.3s ease-in-out;}
-  .pendulum-weight{position:absolute;left:50%;top:65%;width:20px;height:20px;border-radius:50%;background:var(--teal);transform:translateX(-50%);box-shadow:var(--shadow-soft);}
-  .pendulum-base{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:44px solid transparent;border-right:44px solid transparent;border-bottom:22px solid var(--ink);border-radius:4px;}
+  .pendulum-wrap{width:76px;height:112px;position:relative;flex-shrink:0;}
+  .pendulum-body{position:absolute;left:50%;top:4px;width:0;height:82px;}
+  .pendulum-arm{position:absolute;left:0;top:0;width:4px;height:76px;background:linear-gradient(180deg, var(--brass-light), var(--ink));transform-origin:top center;transform:rotate(-8deg);border-radius:3px;transition:transform 0.14s ease-out;}
+  .pendulum-weight{position:absolute;left:50%;top:70%;width:14px;height:14px;border-radius:50%;background:var(--teal);transform:translateX(-50%);box-shadow:var(--shadow-soft);} 
+  .pendulum-base{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:32px solid transparent;border-right:32px solid transparent;border-bottom:16px solid var(--ink);border-radius:4px;}
   .beat-dot{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:var(--fs-xs);font-weight:700;color:var(--ink-soft);cursor:pointer;flex-shrink:0;transition:transform 0.08s ease;}
   .beat-dot[data-level="2"]{background:var(--teal);border-color:var(--teal);color:#fff;}
   .beat-dot[data-level="1"]{background:var(--paper-2);}
@@ -421,7 +421,50 @@
   .metro-controls{border:1px solid var(--line);border-radius:22px;background:#fff;padding:20px}.metro-bpm-row{display:flex;align-items:center;gap:10px}.metro-nudge{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--paper);font-weight:900;font-size:1.1rem;cursor:pointer;color:var(--ink)}.metro-nudge:hover{background:var(--paper-2)}
   .metro-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.metro-actions .btn{min-height:42px}
   .metro-quick{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.metro-quick button{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 11px;font-size:.72rem;font-weight:800;color:var(--ink-soft);cursor:pointer}.metro-quick button:hover{border-color:#C8D0E1;color:var(--ink)}
-  .metro-pattern{margin-top:16px;padding-top:16px;border-top:1px solid var(--line-soft)}.metro-pattern-title{font-size:.67rem;letter-spacing:.12em;font-weight:800;color:var(--ink-faint);text-transform:uppercase;margin-bottom:9px}.metro-dots{display:flex;gap:7px;flex-wrap:wrap}.metro-dots .beat-dot{width:34px;height:34px}.metro-help{font-size:.7rem;color:var(--ink-soft);line-height:1.5;margin-top:10px}
+  /* iPad/Touch stability: metronome animation must never move the controls users need to tap. */
+  .metro-pro{contain:layout style;}
+  .metro-stage,.metro-controls{contain:layout paint;}
+  .metro-controls{touch-action:manipulation;}
+  .metro-controls button,.metro-controls select,.metro-controls input{touch-action:manipulation;}
+  .metro-actions{position:relative;z-index:5;}
+  #metroStartBtn{min-width:112px;touch-action:manipulation;}
+  /* Keep beat indicators visually alive without changing their geometry on every beat. */
+  .metro-dots .beat-dot{
+    width:34px!important;height:34px!important;min-width:34px;min-height:34px;
+    transform:none!important;position:relative;
+    transition:background-color .08s ease,box-shadow .08s ease,border-color .08s ease;
+    will-change:box-shadow;
+  }
+  /* Beat 1-2-3-4 feedback: glow only. Never scale/translate the touch target. */
+  /* v1.6: beat feedback is an internal pulse, not a moving button.
+     The 1-2-3-4 controls keep identical geometry at all times. */
+  .metro-dots .beat-dot{
+    overflow:visible;
+  }
+  .metro-dots .beat-dot.flash{
+    transform:none!important;
+    box-shadow:none!important;
+    border-color:var(--teal);
+  }
+  .metro-dots .beat-dot.flash::after{
+    content:"";position:absolute;left:50%;bottom:-5px;width:5px;height:5px;
+    border-radius:50%;background:var(--teal);transform:translateX(-50%);
+    pointer-events:none;opacity:1;
+    animation:metroBeatPulse .16s ease-out forwards;
+  }
+  @keyframes metroBeatPulse{
+    0%{opacity:0;transform:translateX(-50%) scale(.55)}
+    35%{opacity:1;transform:translateX(-50%) scale(1)}
+    100%{opacity:.35;transform:translateX(-50%) scale(.8)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .metro-dots .beat-dot.flash::after{animation:none;opacity:1;}
+  }
+  .metro-pro-visual{contain:layout paint;}
+  #metroBeatRing{transform-origin:75px 75px;}
+  #metroBeatRing.metro-ring-pulse{filter:drop-shadow(0 0 4px rgba(25,199,177,.28));}
+  .metro-pro-visual .pendulum-wrap{pointer-events:none;}
+  .metro-pattern{margin-top:16px;padding-top:16px;border-top:1px solid var(--line-soft)}.metro-pattern-title{font-size:.67rem;letter-spacing:.12em;font-weight:800;color:var(--ink-faint);text-transform:uppercase;margin-bottom:9px}.metro-dots{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.metro-dots .beat-dot{width:34px;height:34px}.metro-help{font-size:.7rem;color:var(--ink-soft);line-height:1.5;margin-top:10px}
   .metro-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.metro-setting{min-width:0}.metro-setting label{display:block;font-size:.65rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px}.metro-setting select,.metro-setting input[type=number]{width:100%;min-height:40px}
   .metro-ramp-status{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:14px;background:#F5F7FC;border:1px solid var(--line);font-size:.72rem;color:var(--ink-soft);margin-top:12px}.metro-ramp-status strong{color:var(--ink)}
   @media(max-width:900px){.metro-pro{grid-template-columns:1fr}.metro-tempo{font-size:3.3rem}}
@@ -582,7 +625,7 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
 .sr-badge,.eyebrow{font-size:.68rem;letter-spacing:.14em;font-weight:800;color:#2dd4c4}.sr-badge{margin-bottom:8px}
 .sr-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-top:16px}.sr-controls label{display:flex;flex-direction:column;gap:5px;color:#fff;font-size:.78rem;font-weight:700}.sr-controls select{min-width:150px;background:#fff;color:#17121f}
 .sr-standards{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px}.sr-standards span{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);padding:6px 9px;border-radius:999px;font-size:.7rem;color:#fff}
-.sr-test-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.sr-clock{min-width:74px;text-align:center;border-radius:16px;padding:10px 8px;background:#17121f;color:#fff;font-weight:800;font-size:1.25rem}.sr-clock.prep{background:#6d4fe0}.sr-clock.play{background:#0e9488}.sr-score-wrap{margin:16px 0;overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:#fff;padding:10px}.sr-score{min-width:650px;min-height:220px}.sr-score svg{display:block;width:100%;height:auto}.sr-keyinfo{font-weight:700;color:var(--ink);margin:8px 0}.sr-prep-note{padding:11px 13px;border-radius:12px;background:#f7f1e3;color:var(--ink-soft);font-size:.84rem;line-height:1.5}.sr-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.sr-status{margin-top:10px;font-weight:700;color:var(--ink);min-height:22px}.sr-live-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:13px}.sr-live-grid>div{border:1px solid var(--line);border-radius:14px;padding:11px;background:#fffaf5}.sr-live-grid b,.sr-live-grid small{display:block;color:var(--ink-soft)}.sr-live-grid strong{display:block;font-size:1.2rem;margin:3px 0;color:var(--ink)}.sr-review-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.sr-review-grid>div{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fffaf5}.sr-review-score{grid-column:1/-1;text-align:center}.sr-review-score span,.sr-review-score small{display:block;color:var(--ink-soft)}.sr-review-score strong{font-size:2.5rem;color:var(--violet)}.sr-review-grid .progress{height:8px;background:#eee5d2;border-radius:99px;overflow:hidden;margin:8px 0}.sr-review-grid .progress i{display:block;height:100%;width:0;background:var(--violet);border-radius:99px}.sr-next{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.sr-score .sr-note{cursor:default}.sr-score .sr-dynamic{font-family:Georgia,serif;font-size:15px;font-weight:700}.sr-score .sr-rest{font-family:Georgia,serif;font-size:25px}.sr-score .sr-accent{font-size:22px;font-weight:900}.sr-score .sr-slur{fill:none;stroke:#51465c;stroke-width:1.5}
+.sr-test-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.sr-clock{min-width:74px;text-align:center;border-radius:16px;padding:10px 8px;background:#17121f;color:#fff;font-weight:800;font-size:1.25rem}.sr-clock.prep{background:#6d4fe0}.sr-clock.play{background:#0e9488}.sr-score-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0;overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:#fff;padding:10px}.sr-score{min-width:650px;min-height:220px}.sr-score svg{display:block;width:100%;height:auto}.sr-keyinfo{font-weight:700;color:var(--ink);margin:8px 0}.sr-prep-note{padding:11px 13px;border-radius:12px;background:#f7f1e3;color:var(--ink-soft);font-size:.84rem;line-height:1.5}.sr-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.sr-status{margin-top:10px;font-weight:700;color:var(--ink);min-height:22px}.sr-live-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:13px}.sr-live-grid>div{border:1px solid var(--line);border-radius:14px;padding:11px;background:#fffaf5}.sr-live-grid b,.sr-live-grid small{display:block;color:var(--ink-soft)}.sr-live-grid strong{display:block;font-size:1.2rem;margin:3px 0;color:var(--ink)}.sr-review-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.sr-review-grid>div{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fffaf5}.sr-review-score{grid-column:1/-1;text-align:center}.sr-review-score span,.sr-review-score small{display:block;color:var(--ink-soft)}.sr-review-score strong{font-size:2.5rem;color:var(--violet)}.sr-review-grid .progress{height:8px;background:#eee5d2;border-radius:99px;overflow:hidden;margin:8px 0}.sr-review-grid .progress i{display:block;height:100%;width:0;background:var(--violet);border-radius:99px}.sr-next{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.sr-score .sr-note{cursor:default}.sr-score .sr-dynamic{font-family:Georgia,serif;font-size:15px;font-weight:700}.sr-score .sr-rest{font-family:Georgia,serif;font-size:25px}.sr-score .sr-accent{font-size:22px;font-weight:900}.sr-score .sr-slur{fill:none;stroke:#51465c;stroke-width:1.5}
 @media(max-width:650px){.sr-live-grid,.sr-review-grid{grid-template-columns:1fr}.sr-review-score{grid-column:auto}.sr-score{min-width:620px}.sr-controls label{width:100%}.sr-controls select{width:100%}}
 
 
@@ -845,6 +888,7 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
           <span id="pianoOctaveLabel" style="font-size:0.8rem;color:var(--ink-soft);">C4&ndash;G5</span>
           <button class="btn outline sm" id="pianoOctaveUpBtn" title="Octave up">+8</button>
           <button class="btn brass sm" id="pianoMaximizeBtn" type="button" title="Maximize piano">⛶ Maximize</button>
+          <label style="font-size:0.8rem;color:var(--ink-soft);font-weight:600;margin:0 0 0 6px;">Audio</label><input type="range" id="cresAudioVolume" min="80" max="150" value="135" step="1" style="width:110px;accent-color:var(--brass);" aria-label="Crescendo audio volume"><span id="cresAudioVolumeLabel" style="font-size:0.75rem;color:var(--ink-soft);">135%</span>
         </div>
         <div id="pianoOrientationHint" class="piano-orientation-hint" hidden>↻ Rotate your iPad/phone to landscape for the best piano experience.</div>
         <div class="switch-row" style="margin-bottom:12px;">
@@ -1320,9 +1364,9 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
 
       <div class="card">
         <h2>4.2 · The 30-second preparation scan</h2>
-        <p class="sub">Use this as a skill builder. In the real test, the candidate gets up to half a minute to look through and, if they wish, try any or all of the test before playing it for assessment.</p>
+        <p class="sub"><b>This is a preparation skill drill — not another piece to play.</b> Generate an unseen test above first. Then tap <b>Start 30-second preparation</b> in the test card and use this checklist while looking at that same score. If you want extra practice, use this 30-second scan timer below. When time ends, go back to the test card and tap <b>Start performance</b>.</p>
         <div id="scanSteps"></div>
-        <div class="btnrow" style="margin-top:10px;"><button class="btn brass sm" id="scanTimerStart">Start 30-second scan</button><span class="display" id="scanTimerDisplay" style="font-size:1.4rem;">30s</span><button class="btn outline sm" onclick="resetScan()">Reset</button></div>
+        <div class="btnrow" style="margin-top:10px;"><button class="btn brass sm" id="scanTimerStart">Start 30-second scan</button><span class="display" id="scanTimerDisplay" style="font-size:1.4rem;">30s</span><button class="btn outline sm" onclick="resetScan()">Reset</button></div><div id="scanHowTo" class="callout" style="margin-top:12px;"><b>How to use it:</b> Generate a test → start the 30-second preparation → scan this checklist → return to the test card → start performance.</div>
       </div>
 
       <div class="card"><h2>Sight-reading knowledge test</h2><div id="k-reading"></div></div>
@@ -1345,15 +1389,16 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
       <div class="card">
         <h2>Random examiner call</h2>
         <p class="sub">Type your list above, then tap below — it reads straight from what you've typed. Say the scale, do a silent finger rehearsal, then play slowly and steadily.</p>
-        <div class="btnrow"><button class="btn brass" onclick="randomScaleCall()">Call a scale</button></div>
+        <div class="btnrow"><button class="btn brass" onclick="randomScaleCall()">Call a scale / arpeggio</button><button class="btn outline sm" onclick="playCalledScale()">▶ Play called target</button></div>
         <div class="display" style="font-size:1.6rem;margin-top:14px;" id="scaleCallOut">Tap "Call a scale" to begin</div>
       </div>
 
       <div class="card">
         <h2>Record &amp; verify a scale &mdash; actual note-by-note checking</h2>
-        <p class="sub">Scales are a single melodic line, which is the one case a microphone can check approximately note-by-note. This verifies pitch sequence; it does not judge fingering, hand coordination or musical tone.</p>
-        <div class="fieldrow">
+        <p class="sub">Scales and arpeggios are prepared as separate drill targets. Microphone checking is available for a single melodic line; contrary-motion is a two-hand exercise and is therefore played against the target rather than microphone-scored. This verifies pitch sequence; it does not judge fingering, hand coordination or musical tone.</p>
+        <div class="fieldrow" style="grid-template-columns:1fr 1fr 1fr;">
           <div><label>Tonic</label><select id="scaleRoot"><option>C</option><option>C#</option><option>D</option><option>D#</option><option>E</option><option>F</option><option>F#</option><option>G</option><option>G#</option><option>A</option><option>A#</option><option>B</option></select></div>
+          <div><label>Mode</label><select id="scaleMode"><option value="scale">Scale</option><option value="arpeggio">Arpeggio</option><option value="contrary">Contrary-motion C major</option></select></div>
           <div><label>Type</label><select id="scaleType"><option value="major">Major</option><option value="naturalMinor">Natural minor</option><option value="harmonicMinor">Harmonic minor</option><option value="melodicMinor">Melodic minor (ascending)</option></select></div>
         </div>
         <div class="fieldrow">
@@ -1606,8 +1651,8 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
               <button type="button" data-metro-quick="120">120 · Allegro</button>
             </div>
           </div>
-          <div class="metro-pro-visual" style="display:flex;align-items:center;justify-content:center;gap:20px;min-height:150px;">
-            <div class="pendulum-wrap" style="height:150px;"><div class="pendulum-body"><div class="pendulum-arm" id="metroArm"><div class="pendulum-weight"></div></div></div><div class="pendulum-base"></div></div>
+          <div class="metro-pro-visual" style="display:flex;align-items:center;justify-content:center;gap:16px;min-height:132px;">
+            <div class="pendulum-wrap"><div class="pendulum-body"><div class="pendulum-arm" id="metroArm"><div class="pendulum-weight"></div></div></div><div class="pendulum-base"></div></div>
             <div class="ring-wrap" style="width:150px;height:150px;">
               <svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="64" fill="none" stroke="var(--paper-2)" stroke-width="10"></circle><circle id="metroBeatRing" cx="75" cy="75" r="64" fill="none" stroke="var(--teal)" stroke-width="10" stroke-linecap="round" stroke-dasharray="402" stroke-dashoffset="402"></circle></svg>
               <div class="ring-center"><span class="n" id="metroBeatNumber">1</span><span class="l">BEAT</span></div>
@@ -1844,8 +1889,8 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
           <h2 id="composerMissionTitle">Your First 3-Note Melody</h2>
           <p id="composerMissionBrief" class="sub">Use C, D and E. Start on C, explore two notes, then come home to C. Make a tiny musical idea — not a perfect one.</p>
           <div class="composer-steps" id="composerSteps"></div>
-          <div class="btnrow"><button class="btn brass" id="composerPlayIdea">▶ Hear the idea</button><button class="btn outline" id="composerRecordBtn">● Record my idea</button><button class="btn outline" id="composerSaveBtn">Save creation</button></div>
-          <div class="feedback" id="composerFeedback">Pip's rule: there is no wrong first idea. We are training curiosity.</div>
+          <div class="btnrow"><button class="btn brass" id="composerPlayIdea">▶ Hear the idea</button><button class="btn outline" id="composerRecordBtn">🎙️ Record from piano / mic</button><button class="btn outline" id="composerSaveBtn">Save creation</button></div>
+          <div class="feedback" id="composerFeedback">Pip's rule: there is no wrong first idea. We are training curiosity.</div><div id="composerRecordStatus" class="sub" style="margin-top:8px;">Tap Record to allow microphone access, then play Mihira's piano idea.</div><audio id="composerRecordingPlayback" controls style="display:none;width:100%;margin-top:10px;"></audio>
         </div>
         <div class="composer-scorecard">
           <div class="composer-big-note" id="composerNoteCount">0</div>
@@ -2434,6 +2479,30 @@ function ctx(){
   if(actx.state === 'suspended') actx.resume();
   return actx;
 }
+let cresAudioBus=null, cresAudioCompressor=null;
+function audioOut(c){
+  if(!cresAudioBus){
+    cresAudioBus=c.createGain();
+    cresAudioBus.gain.value=1.35;
+    cresAudioCompressor=c.createDynamicsCompressor();
+    cresAudioCompressor.threshold.value=-10;
+    cresAudioCompressor.knee.value=18;
+    cresAudioCompressor.ratio.value=3.2;
+    cresAudioCompressor.attack.value=.003;
+    cresAudioCompressor.release.value=.16;
+    cresAudioBus.connect(cresAudioCompressor);
+    cresAudioCompressor.connect(c.destination);
+  }
+  return cresAudioBus;
+}
+function noteFrequency(name){
+  const m=String(name||'').match(/^([A-G])([#b]?)(-?\d)$/);
+  if(!m) return null;
+  const pc={C:0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,F:5,'F#':6,Gb:6,G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11}[m[1]+m[2]];
+  if(pc==null) return null;
+  const midi=(parseInt(m[3],10)+1)*12+pc;
+  return 440*Math.pow(2,(midi-69)/12);
+}
 function toneAt(freq, startOffset, duration, gain, type){
   const c = ctx();
   const osc = c.createOscillator();
@@ -2445,7 +2514,7 @@ function toneAt(freq, startOffset, duration, gain, type){
   g.gain.linearRampToValueAtTime(gain, t0+0.025);
   g.gain.setValueAtTime(gain, t0+Math.max(duration-0.08,0.03));
   g.gain.linearRampToValueAtTime(0.0001, t0+duration);
-  osc.connect(g); g.connect(c.destination);
+  osc.connect(g); g.connect(audioOut(c));
   osc.start(t0); osc.stop(t0+duration+0.02);
 }
 function clickAt(startOffset, accent){
@@ -2455,7 +2524,7 @@ function clickAt(startOffset, accent){
   const t0 = c.currentTime + startOffset;
   g.gain.setValueAtTime(accent?0.4:0.22, t0);
   g.gain.exponentialRampToValueAtTime(0.0001, t0+0.09);
-  osc.connect(g); g.connect(c.destination);
+  osc.connect(g); g.connect(audioOut(c));
   osc.start(t0); osc.stop(t0+0.1);
 }
 function rampTone(freq, fromGain, toGain, duration){
@@ -2465,7 +2534,7 @@ function rampTone(freq, fromGain, toGain, duration){
   const t0 = c.currentTime;
   g.gain.setValueAtTime(Math.max(fromGain,0.0001), t0);
   g.gain.linearRampToValueAtTime(Math.max(toGain,0.0001), t0+duration);
-  osc.connect(g); g.connect(c.destination);
+  osc.connect(g); g.connect(audioOut(c));
   osc.start(t0); osc.stop(t0+duration+0.05);
 }
 function suddenTone(freq, fromGain, toGain, duration){
@@ -2477,7 +2546,7 @@ function suddenTone(freq, fromGain, toGain, duration){
   g.gain.setValueAtTime(fromGain, t0+half-0.01);
   g.gain.setValueAtTime(toGain, t0+half);
   g.gain.setValueAtTime(toGain, t0+duration);
-  osc.connect(g); g.connect(c.destination);
+  osc.connect(g); g.connect(audioOut(c));
   osc.start(t0); osc.stop(t0+duration+0.05);
 }
 function animateMeter(el, from, to, duration, sudden){
@@ -2492,8 +2561,11 @@ function animateMeter(el, from, to, duration, sudden){
   }
   requestAnimationFrame(step);
 }
-const NOTE_FREQ = {C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392.00,A4:440.00,B4:493.88,
-  C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99};
+const NOTE_FREQ = new Proxy({C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392.00,A4:440.00,B4:493.88,
+  C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99}, {get:(target,prop)=>{
+  if(prop in target) return target[prop];
+  return noteFrequency(prop) || undefined;
+}});
 
 /* ---- richer piano synthesis: a handful of tuned harmonics + a brightness filter that
    closes over time, instead of one flat sine wave. Several selectable voices. ---- */
@@ -2512,11 +2584,11 @@ function playPianoNote(freq,startOffset,duration,velocity,voiceName,releaseOverr
   const register=Math.max(.5,Math.min(2.2,261.63/Math.max(40,freq)));
   const body=c.createBiquadFilter(); body.type='lowpass'; body.Q.value=.65;
   const cutoff=Math.min(11000,2600+Math.min(7000,7200*vel)*(0.72+0.28/register)); body.frequency.setValueAtTime(Math.max(900,cutoff),t0); body.frequency.exponentialRampToValueAtTime(Math.max(650,cutoff*.42),t0+duration+release*.75);
-  const master=c.createGain(); master.gain.setValueAtTime(.0001,t0); master.gain.linearRampToValueAtTime(vel*.64,t0+v.attack); master.gain.exponentialRampToValueAtTime(.0001,t0+duration+release); body.connect(master); master.connect(c.destination);
+  const master=c.createGain(); master.gain.setValueAtTime(.0001,t0); master.gain.linearRampToValueAtTime(Math.min(.95,vel*.86),t0+v.attack); master.gain.exponentialRampToValueAtTime(.0001,t0+duration+release); body.connect(master); master.connect(audioOut(c));
   const detunes=voiceName==='grand'?(freq<180?[-.55,.55]:freq<520?[-1.35,0,1.35]:[-1,0,1]):[0];
   v.harmonics.forEach((h,hi)=>detunes.forEach(cents=>{const osc=c.createOscillator(),g=c.createGain(); const B=v.inharmonic*Math.max(.55,Math.min(2.5,register)); const stretch=v.inharmonic?Math.sqrt(1+B*h.m*h.m):1; osc.type=h.m===1?'triangle':'sine'; osc.frequency.value=freq*h.m*stretch; osc.detune.value=cents; const peak=Math.max(.0002,vel*h.a/detunes.length),d=Math.max(.08,duration*h.d); g.gain.setValueAtTime(.0001,t0); g.gain.linearRampToValueAtTime(peak,t0+v.attack*(hi?1:.72)); g.gain.exponentialRampToValueAtTime(Math.max(.00004,peak*.025),t0+d*.78); g.gain.exponentialRampToValueAtTime(.0001,t0+d+release); osc.connect(g); g.connect(body); osc.start(t0); osc.stop(t0+d+release+.04);}));
   if(v.hammer){const nd=.030,b=c.createBuffer(1,Math.max(1,Math.floor(c.sampleRate*nd)),c.sampleRate),data=b.getChannelData(0); for(let i=0;i<data.length;i++){const x=i/data.length,env=Math.pow(1-x,2.4);data[i]=(Math.random()*2-1)*env*(.65+.35*Math.sin(Math.PI*x));} const src=c.createBufferSource(),bp=c.createBiquadFilter(),hp=c.createBiquadFilter(),ng=c.createGain(); src.buffer=b; hp.type='highpass'; hp.frequency.value=Math.min(6500,Math.max(700,freq*1.7)); bp.type='bandpass'; bp.frequency.value=Math.min(5200,Math.max(1300,freq*3.1)); bp.Q.value=.75; ng.gain.setValueAtTime(vel*.055,t0); ng.gain.exponentialRampToValueAtTime(.0001,t0+nd); src.connect(hp); hp.connect(bp); bp.connect(ng); ng.connect(body); src.start(t0); src.stop(t0+nd+.01);}
-  if(v.body){[.42,.73].forEach((ratio,i)=>{const bloom=c.createOscillator(),bg=c.createGain(); bloom.type='sine'; bloom.frequency.value=Math.max(75,Math.min(420,freq*ratio)); bg.gain.setValueAtTime(.0001,t0); bg.gain.linearRampToValueAtTime(vel*v.body*(i?.45:1),t0+.025); bg.gain.exponentialRampToValueAtTime(.0001,t0+Math.min(1.7,duration+release*.85)); bloom.connect(bg); bg.connect(c.destination); bloom.start(t0); bloom.stop(t0+1.8);});}
+  if(v.body){[.42,.73].forEach((ratio,i)=>{const bloom=c.createOscillator(),bg=c.createGain(); bloom.type='sine'; bloom.frequency.value=Math.max(75,Math.min(420,freq*ratio)); bg.gain.setValueAtTime(.0001,t0); bg.gain.linearRampToValueAtTime(vel*v.body*(i?.45:1),t0+.025); bg.gain.exponentialRampToValueAtTime(.0001,t0+Math.min(1.7,duration+release*.85)); bloom.connect(bg); bg.connect(audioOut(c)); bloom.start(t0); bloom.stop(t0+1.8);});}
 }
 
 function playMelody(notes, startAt, noteLen, gap){
@@ -2531,14 +2603,14 @@ function playLegatoPhrase(notes, level){
   // hard = just barely connected, genuinely harder to tell apart from detached.
   const release = level==='easy' ? 0.22 : level==='hard' ? 0.07 : 0.13;
   let t=0;
-  notes.forEach(n=>{ playPianoNote(NOTE_FREQ[n], t, 0.34, 0.4, pianoVoice, release); t+=0.36; });
+  notes.forEach(n=>{ playPianoNote(NOTE_FREQ[n], t, 0.34, 0.58, pianoVoice, release); t+=0.36; });
 }
 function playStaccatoPhrase(notes, level){
   // staccato needs an audible silent gap. Easy = very short/obvious; hard = a longer note
   // with a smaller gap, genuinely subtler.
   const noteLen = level==='easy' ? 0.08 : level==='hard' ? 0.19 : 0.12;
   let t=0;
-  notes.forEach(n=>{ playPianoNote(NOTE_FREQ[n], t, noteLen, 0.5, pianoVoice, 0.04); t+=0.38; });
+  notes.forEach(n=>{ playPianoNote(NOTE_FREQ[n], t, noteLen, 0.68, pianoVoice, 0.04); t+=0.38; });
 }
 
 /* ======================= DYNAMICS ======================= */
@@ -2773,7 +2845,7 @@ function newPulse(){
   document.getElementById('pulseFeedback').textContent='Listen to “'+tune.name+'” and feel the strong beats.';
   document.getElementById('pulseFeedback').className='feedback';
   document.getElementById('pulsePlay').onclick = ()=>{
-    playPianoTune(tune, tempo, bars, .17);
+    playPianoTune(tune, tempo, bars, .27);
     document.querySelectorAll('[data-pulse]').forEach(b=>b.disabled=false);
   };
 }
@@ -2866,7 +2938,7 @@ function newPitch(){
   const idx=Math.floor(Math.random()*PITCH_PATTERNS.length);
   pitchPattern=[...PITCH_PATTERNS[idx]];
   document.getElementById('pitchViz').textContent='\u00A0';
-  document.getElementById('pitchPlay').onclick = ()=>{ playMelody(pitchPattern, 0, 0.5, 0.15); };
+  document.getElementById('pitchPlay').onclick = ()=>{ playMelody(pitchPattern, 0, 0.5, 0.24); };
 }
 document.getElementById('pitchReveal').addEventListener('click', ()=>{
   document.getElementById('pitchViz').textContent = pitchPattern.map(n=>n.replace('4','')).join(' \u2013 ');
@@ -2914,8 +2986,8 @@ function newDetective(){
   document.getElementById('detectiveFeedback').textContent='';
   document.getElementById('detectivePlay').onclick = ()=>{
     const noteLen = level==='hard' ? 0.36 : 0.42;
-    const end = playMelody(round.base, 0, noteLen, 0.1);
-    playMelody(round.altered, end+0.5, noteLen, 0.1);
+    const end = playMelody(round.base, 0, noteLen, 0.18);
+    playMelody(round.altered, end+0.5, noteLen, 0.18);
     document.querySelectorAll('[data-det]').forEach(b=>b.disabled=false);
   };
 }
@@ -2958,13 +3030,13 @@ function newFeature(){
   document.getElementById('featureFeedback').className='feedback';
   document.getElementById('featurePlay').onclick=()=>{
     const scale=level==='easy'?1.15:level==='hard'?.82:1;
-    const ampBase=.13*scale; let t=0;
+    const ampBase=.23*scale; let t=0;
     tune.notes.forEach((n,i)=>{
       let amp=ampBase;
-      if(tune.dyn==='quiet') amp=.07*scale;
-      if(tune.dyn==='loud') amp=.25*scale;
-      if(tune.dyn==='sudden') amp=i<4?.08*scale:.25*scale;
-      if(tune.dyn==='gradual') amp=(.06+.035*i)*scale;
+      if(tune.dyn==='quiet') amp=.13*scale;
+      if(tune.dyn==='loud') amp=.42*scale;
+      if(tune.dyn==='sudden') amp=i<4?.14*scale:.42*scale;
+      if(tune.dyn==='gradual') amp=(.12+.055*i)*scale;
       playPianoNote(NOTE_FREQ[n],t,.36,amp,pianoVoice,tune.art==='smooth'?.08:.025); t+=.40;
     });
     const bass='C3'; for(let i=0;i<8;i+=2) playPianoNote(NOTE_FREQ[bass],i*.40,.30,.045,pianoVoice,.03);
@@ -3210,9 +3282,9 @@ document.getElementById('scanTimerStart').addEventListener('click', (ev)=>{
     remaining--;
     if(remaining<=0){
       clearInterval(scanTimerInterval); scanTimerInterval=null;
-      display.textContent = "Time's up — play!";
+      display.textContent = "Time's up — go to Start performance above!";
       display.style.color = 'var(--burgundy)';
-      showToast("30 seconds done — begin the piece now, right through, no stopping.");
+      showToast("30 seconds done — return to the unseen test above and tap Start performance.");
     } else {
       display.textContent = remaining+'s';
       display.style.color = remaining<=10 ? 'var(--burgundy)' : 'var(--ink)';
@@ -3245,7 +3317,11 @@ async function saveScaleList(){
   setTimeout(()=>document.getElementById('scaleListSaved').textContent='', 1800);
 }
 async function loadScaleList(){
-  const list = await sget('scale-list', []);
+  let list = await sget('scale-list', []);
+  if(!Array.isArray(list) || !list.length){
+    list=[...OFFICIAL_GRADE1_SCALE_SET];
+    await sset('scale-list', list);
+  }
   document.getElementById('scaleListInput').value = list.join('\n');
   return list;
 }
@@ -3260,6 +3336,19 @@ async function randomScaleCall(){
   out.textContent = list[Math.floor(Math.random()*list.length)];
   await sset('scale-list', list); // keep it saved automatically, so Save is just a reassurance, not a requirement
   await recordPracticeActivity();
+}
+
+function playCalledScale(){
+  const text=(document.getElementById('scaleCallOut')?.textContent||'').toLowerCase();
+  if(!text || text.startsWith('tap "call')) return;
+  if(text.includes('contrary')){playContraryCMajor();return;}
+  const root=text.startsWith('g ')?'G':text.startsWith('a ')?'A':text.startsWith('f ')?'F':'C';
+  const minor=text.includes('a minor')||text.includes('d minor');
+  const type=minor?'naturalMinor':'major';
+  const arpeggio=text.includes('arpeggio');
+  const base=rootMidi(root), steps=arpeggio?(minor?[0,3,7]:[0,4,7]):SCALE_STEPS[type];
+  const asc=[]; for(let o=0;o<1+(text.includes('2 oct')?1:0);o++)steps.forEach(x=>asc.push(base+x+12*o)); asc.push(base+12*(text.includes('2 oct')?2:1));
+  let t=0; asc.forEach(m=>{playPianoNote(midiToFreq(m),t,.42,.62,pianoVoice);t+=.38;});
 }
 
 /* ---- real scale theory: deterministic, not ABRSM-syllabus guesswork ---- */
@@ -3324,18 +3413,30 @@ function pressPianoKey(note, el){
   if(label) label.textContent = 'You played: '+note.replace(/\d/,'')+(note.includes('#')?' (sharp)':'');
 }
 function currentScaleSeq(){
-  return buildScaleSequence(
-    document.getElementById('scaleRoot').value,
-    document.getElementById('scaleType').value,
-    parseInt(document.getElementById('scaleOctaves').value),
-    document.getElementById('scaleDirection').value
-  );
+  const mode=document.getElementById('scaleMode')?.value||'scale';
+  const root=document.getElementById('scaleRoot').value;
+  const type=document.getElementById('scaleType').value;
+  const oct=parseInt(document.getElementById('scaleOctaves').value)||1;
+  const dir=document.getElementById('scaleDirection').value;
+  if(mode==='arpeggio'){
+    const base=rootMidi(root), minor=/minor/i.test(type);
+    const triad=minor?[0,3,7]:[0,4,7];
+    const asc=[]; for(let o=0;o<oct;o++)triad.forEach(x=>asc.push(base+x+12*o)); asc.push(base+12*oct);
+    return dir==='up'?asc:asc.concat(asc.slice(0,-1).reverse());
+  }
+  return buildScaleSequence(root,type,oct,dir);
 }
+function playContraryCMajor(){
+  const right=[60,62,64,65,67,69,71,72], left=[60,58,56,55,53,51,49,48];
+  let t=0; for(let i=0;i<right.length;i++){playPianoNote(midiToFreq(right[i]),t,.42,.58,pianoVoice);playPianoNote(midiToFreq(left[i]),t,.42,.54,pianoVoice);t+=.38;}
+}
+
 document.getElementById('scalePlayTargetBtn').addEventListener('click', ()=>{
+  if(document.getElementById('scaleMode')?.value==='contrary'){ playContraryCMajor(); document.getElementById('scaleRecFeedback').textContent='C major contrary motion: both hands start on middle C and move in opposite directions.'; return; }
   const seq = currentScaleSeq();
-  let t=0;
-  seq.forEach(m=>{ playPianoNote(midiToFreq(m), t, 0.38, 0.5, pianoVoice); t+=0.34; });
+  let t=0; seq.forEach(m=>{ playPianoNote(midiToFreq(m), t, 0.42, 0.62, pianoVoice); t+=0.38; });
 });
+document.getElementById('scaleMode')?.addEventListener('change',()=>{const contrary=document.getElementById('scaleMode').value==='contrary'; document.getElementById('scaleRecordBtn').disabled=contrary; document.getElementById('scaleLiveBtn').disabled=contrary; document.getElementById('scaleRecFeedback').textContent=contrary?'Contrary motion is a two-hand exercise; use Play target and practise with the teacher’s fingering.':'';});
 
 /* ---- edit-distance alignment between target and detected pitch-class sequences ---- */
 function alignPitchSeq(target, got){
@@ -3822,7 +3923,7 @@ function metroClickSound(time, accentLevel){
   const vol = (accentLevel===2?0.55:0.3) * metroVolume;
   g.gain.setValueAtTime(vol, time);
   g.gain.exponentialRampToValueAtTime(0.0001, time+decay);
-  osc.connect(g); g.connect(c.destination);
+  osc.connect(g); g.connect(audioOut(c));
   osc.start(time); osc.stop(time+decay+0.02);
 }
 function metroScheduleNote(beatSlot, time){
@@ -3853,7 +3954,7 @@ function rampTargetReached(){
   const c = ctx();
   [660,880].forEach((f,i)=>{ const o=c.createOscillator(), g=c.createGain(); o.type='sine'; o.frequency.value=f;
     g.gain.setValueAtTime(0.0001, c.currentTime+i*0.12); g.gain.linearRampToValueAtTime(0.25*metroVolume, c.currentTime+i*0.12+0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+i*0.12+0.3); o.connect(g); g.connect(c.destination);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+i*0.12+0.3); o.connect(g); g.connect(audioOut(c));
     o.start(c.currentTime+i*0.12); o.stop(c.currentTime+i*0.12+0.32); });
 }
 function advanceRamp(){
@@ -3898,9 +3999,9 @@ function swingPendulum(){
   const arm = document.getElementById('metroArm');
   if(!arm) return;
   const secondsPerBeat = 60/metroTempo;
-  arm.style.transitionDuration = secondsPerBeat.toFixed(3)+'s';
+  arm.style.transitionDuration = Math.min(0.22, Math.max(0.11, secondsPerBeat*0.22)).toFixed(3)+'s';
   pendulumSwungRight = !pendulumSwungRight;
-  arm.style.transform = 'rotate('+(pendulumSwungRight?22:-22)+'deg)';
+  arm.style.transform = 'rotate('+(pendulumSwungRight?8:-8)+'deg)';
 }
 function resetPendulum(){
   const arm = document.getElementById('metroArm');
@@ -3917,19 +4018,24 @@ function flashBeatDot(slot){
   if(beatNumber) beatNumber.textContent=beat;
   if(state){state.textContent=inCountIn?'COUNT-IN':'PLAYING';state.classList.remove('idle');}
   const dots = document.querySelectorAll('#metroBeatDots .beat-dot');
-  if(dots[slot]){ dots[slot].classList.add('flash'); setTimeout(()=>dots[slot].classList.remove('flash'), 110); }
+  if(dots[slot]){ dots[slot].classList.remove('flash'); void dots[slot].offsetWidth; dots[slot].classList.add('flash'); setTimeout(()=>dots[slot].classList.remove('flash'), 170); }
   if(slot%metroSubdivision===0){
     const ring = document.getElementById('metroBeatRing');
     if(ring){
       const circumference=402;
       ring.style.strokeDashoffset = (circumference*(1-((slot%metroBeatsPerBar)+1)/metroBeatsPerBar)).toFixed(1);
+      ring.classList.remove('metro-ring-pulse');
+      void ring.offsetWidth;
+      ring.classList.add('metro-ring-pulse');
+      setTimeout(()=>ring.classList.remove('metro-ring-pulse'),160);
     }
     swingPendulum();
   }
 }
 function startMetronome(){
   if(metroIsPlaying) return;
-  metroIsPlaying=true; metroCurrentBeat=0; metroBarCount=0; metroSessionBar=0; metroNotesInQueue=[];
+  metroIsPlaying=true;
+  document.getElementById('tab-metronome')?.classList.add('metro-running'); metroCurrentBeat=0; metroBarCount=0; metroSessionBar=0; metroNotesInQueue=[];
   metroCountInRemaining=metroCountInBars;
   metroNextNoteTime = ctx().currentTime + 0.06;
   metroScheduler();
@@ -3939,6 +4045,7 @@ function startMetronome(){
 }
 function stopMetronome(){
   metroIsPlaying=false;
+  document.getElementById('tab-metronome')?.classList.remove('metro-running');
   clearTimeout(metroTimerID);
   document.getElementById('metroStartBtn').innerHTML = '&#9654; Start';
   document.getElementById('metroStartBtn').classList.remove('active');
@@ -5195,6 +5302,7 @@ document.getElementById('invigStopBtn').addEventListener('click', async ()=>{
 
 /* ---- Piano voice selector, octave shift, sustain ---- */
 document.getElementById('pianoVoiceSelect').addEventListener('change', (e)=>{ pianoVoice = e.target.value; });
+document.getElementById('cresAudioVolume')?.addEventListener('input',(e)=>{const v=Number(e.target.value)/100; if(cresAudioBus) cresAudioBus.gain.value=v; document.getElementById('cresAudioVolumeLabel').textContent=e.target.value+'%';});
 const OCTAVE_LABELS = {'-2':'C2–G3','-1':'C3–G4','0':'C4–G5','1':'C5–G6','2':'C6–G7'};
 document.getElementById('pianoOctaveDownBtn').addEventListener('click', ()=>{
   pianoOctaveShift = Math.max(-2, pianoOctaveShift-1);
@@ -5572,8 +5680,8 @@ function srGenerate(){
 }
 function srStaffY(ev){
   // Five-finger Grade 1 positions stay on one diatonic staff area; degree controls the staff step.
-  const base = srCurrent.hand==='left' ? 112 : 88;
-  return base - (ev.degree||0)*7;
+  const base = srCurrent.hand==='left' ? 79 : 91;
+  return base - (ev.degree||0)*6;
 }
 function srNoteName(m){return CHROMA[m%12]+(Math.floor(m/12)-1);}
 function renderSRScore(){
@@ -5590,7 +5698,7 @@ function renderSRScore(){
    bar.forEach(ev=>{
      if(ev.rest){out+=`<text class="sr-rest" x="${cursor+8}" y="${y0+30}" text-anchor="middle">${ev.dur>=3?'𝄻':ev.dur>=2?'𝄼':'𝄽'}</text>`;cursor+=Math.max(22,barW*(ev.dur/srCurrent.beats)-6);return;}
      const yy=srStaffY(ev); const nx=cursor+12; out+=`<ellipse class="sr-note" cx="${nx}" cy="${yy}" rx="7" ry="5" fill="#17121f" transform="rotate(-12 ${nx} ${yy})"/>`;
-     const stemUp=yy>92; out+=`<line x1="${nx+6}" y1="${yy}" x2="${nx+6}" y2="${stemUp?yy-34:yy+34}" stroke="#17121f" stroke-width="2"/>`;
+     const stemUp=yy>=79; out+=`<line x1="${nx+6}" y1="${yy}" x2="${nx+6}" y2="${stemUp?yy-34:yy+34}" stroke="#17121f" stroke-width="2"/>`;
      if(ev.dur<=.5)out+=`<path d="M ${nx+6} ${stemUp?yy-34:yy+34} q 12 6 0 13" fill="none" stroke="#17121f" stroke-width="3"/>`;
      if(ev.accidental)out+=`<text x="${nx-17}" y="${yy+6}" font-size="18">♯</text>`; if(ev.accent)out+=`<text class="sr-accent" x="${nx-8}" y="${yy-14}" text-anchor="middle">&gt;</text>`; if(ev.staccato)out+=`<circle cx="${nx}" cy="${yy-12}" r="2.3" fill="#17121f"/>`;
      cursor+=Math.max(24,barW*(ev.dur/srCurrent.beats)-6);
@@ -5768,7 +5876,35 @@ async function composerSave(){if(composerCurrent.length<3){document.getElementBy
 async function renderComposerLibrary(){const el=document.getElementById('composerLibrary');if(!el)return;const lib=await sget('composer-library',[]);const visibleLib=lib.slice(0,24);if(!lib.length){el.innerHTML='<div class="image-upload-note">No compositions yet. Your first one can be only three notes.</div>';renderComposerStats();return;}el.innerHTML=visibleLib.map(x=>`<div class="composer-piece"><h3>🎵 ${x.title}</h3><div class="meta">${new Date(x.at).toLocaleDateString()} · ${x.notes.length} notes · Mission ${x.mission}</div><div class="version">Version ${x.version||1} · ${(x.durations||[]).filter(d=>d>=1).length} long notes</div><div style="margin-top:9px;font-family:ui-monospace,monospace;letter-spacing:.08em;">${x.notes.map((n,i)=>n.replace('4','')+((x.durations?.[i]||.5)>=1?'—':'')).join(' · ')}</div><button class="btn outline sm" type="button" onclick="composerReplaySaved(${x.id})">▶ Hear it</button></div>`).join('')+(lib.length>visibleLib.length?`<div class="image-upload-note">Showing your latest ${visibleLib.length} creations. Your full Music Book remains safely stored.</div>`:'');renderComposerStats();}
 async function composerReplaySaved(id){const lib=await sget('composer-library',[]),x=lib.find(y=>y.id===id);if(!x)return;let t=0;x.notes.forEach((n,i)=>{const f={C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88}[n]||261.63;const d=x.durations?.[i]||.5;playPianoNote(f,t,d*.9,.42,pianoVoice);t+=d;});}
 async function renderComposerStats(){const lib=await sget('composer-library',[]),done=await sget('composer-completed',[]);const a=document.getElementById('composerSavedCount'),b=document.getElementById('composerCompletions');if(a)a.textContent=lib.length;if(b)b.textContent=done.length;}
-async function composerRecord(){if(composerRecording){composerRecording=false;clearTimeout(composerRecTimer);document.getElementById('composerRecordBtn').textContent='● Record my idea';document.getElementById('composerFeedback').textContent='Recording stopped. For the first version, the melody you built is saved as note data; microphone recording analysis will be added to Studio.';return;}composerRecording=true;document.getElementById('composerRecordBtn').textContent='■ Stop recording';document.getElementById('composerFeedback').textContent='Recording... play your idea once, then stop.';composerRecTimer=setTimeout(()=>{if(composerRecording)composerRecord();},15000);}
+let composerRecordBlobUrl=null;
+async function composerRecord(){
+  const btn=document.getElementById('composerRecordBtn'), status=document.getElementById('composerRecordStatus'), audio=document.getElementById('composerRecordingPlayback');
+  if(composerRecording){
+    composerRecording=false; clearTimeout(composerRecTimer);
+    try{
+      const result=await stopManualRecording();
+      if(composerRecordBlobUrl) URL.revokeObjectURL(composerRecordBlobUrl);
+      composerRecordBlobUrl=URL.createObjectURL(result.blob);
+      audio.src=composerRecordBlobUrl; audio.style.display='block';
+      btn.textContent='🎙️ Record again';
+      status.textContent='Recording captured. Tap play below to listen to Mihira’s real piano performance.';
+      document.getElementById('composerFeedback').textContent='Real audio captured — now listen like a producer. What do you want to keep?';
+    }catch(e){ btn.textContent='🎙️ Record from piano / mic'; status.textContent='The recording could not be completed. Check microphone permission and try again.'; }
+    return;
+  }
+  try{
+    await startManualRecording();
+    composerRecording=true;
+    btn.textContent='■ Stop recording';
+    status.textContent='Recording microphone input… play the piano now, then tap Stop recording.';
+    document.getElementById('composerFeedback').textContent='Recording… play the idea once with a clear, steady touch.';
+    composerRecTimer=setTimeout(()=>{if(composerRecording)composerRecord();},15000);
+  }catch(e){
+    composerRecording=false;
+    status.textContent='Microphone permission is required. Allow microphone access for Crescendo and try again.';
+    document.getElementById('composerFeedback').textContent='Could not access the microphone.';
+  }
+}
 document.querySelectorAll('[data-duration]').forEach(b=>b.addEventListener('click',()=>{composerDuration=parseFloat(b.dataset.duration);document.querySelectorAll('[data-duration]').forEach(x=>x.classList.remove('active'));b.classList.add('active');}));document.getElementById('composerPlayIdea')?.addEventListener('click',composerPlayIdea);document.getElementById('composerSaveBtn')?.addEventListener('click',composerSave);document.getElementById('composerRecordBtn')?.addEventListener('click',composerRecord);
 </script>
 </body>
