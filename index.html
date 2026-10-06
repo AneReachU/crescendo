@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- CRESCENDO v1.8 PIP VOICE STUDIO | AUDIO POLISH | AURAL PIANO STUDIO | BOOT DIAGNOSTIC v1.5 | AURAL 2.2.1 polish: contextual console, ABRSM-style singing support, sequential Test D, robust 10-question drill -->
+<!-- CRESCENDO v1.9 PIP VOICE ENGINE | MALE MENTOR ONLY | AUDIO POLISH | AURAL PIANO STUDIO | BOOT DIAGNOSTIC v1.5 | AURAL 2.2.1 polish: contextual console, ABRSM-style singing support, sequential Test D, robust 10-question drill -->
 <title>Crescendo — Mihira's Musical Universe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1713,13 +1713,13 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
           <span>Pip speaks replies out loud</span>
         </div>
         <div class="switch-row" style="margin-top:10px;align-items:center;gap:10px;flex-wrap:wrap;">
-          <span style="font-weight:700;">Pip voice</span>
+          <span style="font-weight:700;">Pip Voice Engine</span>
           <select id="pipVoiceSelect" style="max-width:260px;flex:1;min-width:180px;">
             <option value="auto">British mentor — best available</option>
           </select>
           <button class="btn outline sm" id="pipVoicePreview" type="button">▶ Preview voice</button>
         </div>
-        <div class="mini" id="pipVoiceStatus" style="margin-top:6px;">Pip will use a warm, mature British mentor voice when your device provides one.</div>
+        <div class="mini" id="pipVoiceStatus" style="margin-top:6px;">Pip Voice Engine: mature male mentor voice only. British English is preferred; female fallback is disabled.</div>
         <div class="btnrow" style="margin-top:12px;flex-wrap:wrap;" id="pipSuggestions"></div>
         <div id="pipCoachDemo" class="card" style="margin-top:14px;background:var(--paper-2);display:none;">
           <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
@@ -4875,82 +4875,173 @@ function updateChatBubble(id, text){
 let voicesLoaded = false;
 let pipSelectedVoice = 'auto';
 
+/*
+ * PIP VOICE ENGINE v2
+ * Important: never silently fall back to a female voice.
+ * Browser speech synthesis is device-dependent; we prefer a verified
+ * mature male English voice, with British English strongly preferred.
+ */
+const PIP_FEMALE_HINTS = /samantha|victoria|karen|susan|zira|female|woman|ava|allison|moira|fiona|tessa|kate|serena|siri.*female|google uk english female|google us english female/i;
+const PIP_MALE_HINTS = /daniel|oliver|arthur|george|james|alfie|ryan|brian|alex|fred|tom|male|man|uk english male|british.*male|english.*male/i;
+
 function getPipVoices(){
   if(!('speechSynthesis' in window)) return [];
   return window.speechSynthesis.getVoices().filter(v=>v && v.lang);
 }
+
+function isPipFemaleVoice(v){
+  const n=(v.name||'');
+  return PIP_FEMALE_HINTS.test(n);
+}
+
+function isPipMaleVoice(v){
+  const n=(v.name||'');
+  return PIP_MALE_HINTS.test(n) && !isPipFemaleVoice(v);
+}
+
 function scorePipVoice(v){
-  const n=(v.name||'').toLowerCase(), l=(v.lang||'').toLowerCase();
+  const n=(v.name||'').toLowerCase();
+  const l=(v.lang||'').toLowerCase();
+  if(isPipFemaleVoice(v)) return -10000;
+
   let s=0;
-  if(l==='en-gb') s+=55;
-  else if(l.startsWith('en-gb')) s+=45;
-  else if(l.startsWith('en')) s+=12;
-  if(/daniel|oliver|arthur|george|james|alfie|ryan|brian|alex/i.test(n)) s+=22;
-  if(/male|man|uk english male|british/i.test(n)) s+=15;
-  if(/samantha|victoria|female|woman|zira|karen/i.test(n)) s-=35;
-  if(/compact|enhanced|premium|natural/i.test(n)) s+=5;
+  if(l === 'en-gb') s += 100;
+  else if(l.startsWith('en-gb')) s += 85;
+  else if(l.startsWith('en')) s += 30;
+  if(/daniel/i.test(n)) s += 80;       // common Apple British male voice
+  if(/oliver/i.test(n)) s += 70;
+  if(/arthur|george|james|alfie/i.test(n)) s += 55;
+  if(/male|man|british/i.test(n)) s += 35;
+  if(/enhanced|premium|natural/i.test(n)) s += 10;
+  if(/compact/i.test(n)) s -= 10;
   return s;
 }
+
+function getVerifiedPipMaleVoices(){
+  return getPipVoices()
+    .filter(v=>isPipMaleVoice(v))
+    .sort((a,b)=>scorePipVoice(b)-scorePipVoice(a));
+}
+
+function safePipStorageGet(){
+  try { return localStorage.getItem('crescendo-pip-voice') || 'auto'; }
+  catch(e){ return 'auto'; }
+}
+
+function safePipStorageSet(value){
+  try { localStorage.setItem('crescendo-pip-voice', value); } catch(e){}
+}
+
 function populatePipVoices(){
   const sel=document.getElementById('pipVoiceSelect');
   const status=document.getElementById('pipVoiceStatus');
   if(!sel || !('speechSynthesis' in window)) return;
-  const voices=getPipVoices().sort((a,b)=>scorePipVoice(b)-scorePipVoice(a));
-  const current=localStorage.getItem('crescendo-pip-voice')||'auto';
+
+  const voices=getVerifiedPipMaleVoices();
+  const current=safePipStorageGet();
   pipSelectedVoice=current;
-  sel.innerHTML='<option value="auto">British mentor — best available</option>';
+
+  sel.innerHTML='<option value="auto">Pip — mature male mentor (best available)</option>';
+
   voices.forEach(v=>{
     const opt=document.createElement('option');
     opt.value=v.voiceURI || v.name;
-    opt.textContent=(v.name||'System voice')+' · '+(v.lang||'');
+    opt.textContent=(v.name||'Male English voice')+' · '+(v.lang||'');
     sel.appendChild(opt);
   });
+
   if([...sel.options].some(o=>o.value===current)) sel.value=current;
-  const best=voices[0];
+  else {
+    sel.value='auto';
+    pipSelectedVoice='auto';
+  }
+
   if(status){
-    status.textContent = best
-      ? 'Best available: '+best.name+' ('+best.lang+'). Voice availability depends on this device/browser.'
-      : 'No speech voice is exposed yet. Try Preview after voices finish loading.';
+    if(voices.length){
+      const best=voices[0];
+      status.textContent='Pip voice engine: '+best.name+' ('+best.lang+'). Female voices are blocked for Pip.';
+    } else {
+      status.textContent='No verified male English voice is exposed by this browser yet. Pip will NOT fall back to the old female voice.';
+    }
   }
 }
+
 function resolvePipVoice(){
-  const voices=getPipVoices();
+  const voices=getVerifiedPipMaleVoices();
   if(!voices.length) return null;
+
   if(pipSelectedVoice && pipSelectedVoice!=='auto'){
     const exact=voices.find(v=>(v.voiceURI||v.name)===pipSelectedVoice);
     if(exact) return exact;
   }
-  return voices.sort((a,b)=>scorePipVoice(b)-scorePipVoice(a))[0] || null;
+
+  return voices[0] || null;
 }
+
 function speakAsPip(text){
-  if(!('speechSynthesis' in window)) return;
+  if(!('speechSynthesis' in window)) return false;
+
   const toggle=document.getElementById('pipVoiceToggle');
-  if(!toggle || !toggle.checked) return;
-  window.speechSynthesis.cancel();
+  if(!toggle || !toggle.checked) return false;
+
   const clean=String(text||'').replace(/\s+/g,' ').trim();
-  if(!clean) return;
-  const u=new SpeechSynthesisUtterance(clean);
-  u.lang='en-GB';
-  u.pitch=0.88;
-  u.rate=0.90;
-  u.volume=1.0;
+  if(!clean) return false;
+
   const voice=resolvePipVoice();
-  if(voice){ u.voice=voice; u.lang=voice.lang || 'en-GB'; }
+
+  // Never silently use the old female/default voice.
+  if(!voice){
+    const status=document.getElementById('pipVoiceStatus');
+    if(status) status.textContent='Pip is waiting for a male English voice from this device/browser. No female fallback is allowed.';
+    return false;
+  }
+
+  window.speechSynthesis.cancel();
+
+  const u=new SpeechSynthesisUtterance(clean);
+  u.voice=voice;
+  u.lang=voice.lang || 'en-GB';
+  u.pitch=0.84;
+  u.rate=0.88;
+  u.volume=1.0;
+
+  // Slightly more natural phrasing without changing the words.
+  u.onstart=()=>{
+    const status=document.getElementById('pipVoiceStatus');
+    if(status) status.textContent='Pip is speaking with '+(voice.name||'the selected male mentor voice')+'.';
+  };
+  u.onend=()=>{
+    const status=document.getElementById('pipVoiceStatus');
+    if(status) status.textContent='Pip voice ready.';
+  };
+
   window.speechSynthesis.speak(u);
+  return true;
 }
+
 if('speechSynthesis' in window){
-  window.speechSynthesis.onvoiceschanged = ()=>{ voicesLoaded=true; populatePipVoices(); };
+  window.speechSynthesis.onvoiceschanged = ()=>{
+    voicesLoaded=true;
+    populatePipVoices();
+  };
   setTimeout(populatePipVoices,300);
+  setTimeout(populatePipVoices,1200);
 }
+
 document.getElementById('pipVoiceSelect')?.addEventListener('change',e=>{
   pipSelectedVoice=e.target.value||'auto';
-  localStorage.setItem('crescendo-pip-voice',pipSelectedVoice);
+  safePipStorageSet(pipSelectedVoice);
   populatePipVoices();
 });
+
 document.getElementById('pipVoicePreview')?.addEventListener('click',()=>{
   const toggle=document.getElementById('pipVoiceToggle');
   if(toggle) toggle.checked=true;
-  speakAsPip('Hello Mihira. I am Pip. Let us make some beautiful music together.');
+  const ok=speakAsPip('Hello Mihira. I am Pip. Let us make some beautiful music together.');
+  if(!ok){
+    const status=document.getElementById('pipVoiceStatus');
+    if(status) status.textContent='No verified male English voice is available on this device. Please select an English male voice in the device voice settings, then return here.';
+  }
 });
 
 async function sendPipMessage(){
