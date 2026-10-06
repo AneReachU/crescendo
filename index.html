@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- BOOT DIAGNOSTIC v1.5 | AURAL 2.2.1 polish: contextual console, ABRSM-style singing support, sequential Test D, robust 10-question drill -->
+<!-- CRESCENDO v1.7 AUDIO POLISH | AURAL PIANO STUDIO | BOOT DIAGNOSTIC v1.5 | AURAL 2.2.1 polish: contextual console, ABRSM-style singing support, sequential Test D, robust 10-question drill -->
 <title>Crescendo — Mihira's Musical Universe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -237,6 +237,21 @@
   .qa .q{font-weight:600;margin-bottom:6px;font-size:var(--fs-sm);}
   .qa .a{display:none;color:var(--teal);font-size:var(--fs-sm);margin-top:6px;}
   .qa .a.shown{display:block;}
+
+
+  /* ============================= AURAL PIANO LISTENING STUDIO v1.6 ============================= */
+  .aural-library-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+  .aural-library-item{border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;text-align:left;cursor:pointer;transition:transform .15s ease,box-shadow .2s ease,border-color .2s ease}
+  .aural-library-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-soft);border-color:var(--teal)}
+  .aural-library-item b{display:block;font-family:'Fraunces',serif;font-size:1rem}
+  .aural-library-item small{display:block;color:var(--ink-soft);margin-top:3px;line-height:1.35}
+  .aural-library-item .tag{display:inline-block;margin-top:7px;font-size:.66rem;font-weight:700;color:var(--teal);background:#E2EEEB;border-radius:999px;padding:3px 7px}
+  .aural-mock-question{padding:12px;border:1px solid var(--line);border-radius:12px;margin-top:10px;background:var(--surface)}
+  .aural-mock-qtitle{font-weight:800;margin-bottom:7px}
+  .aural-mock-progress{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin:10px 0}
+  .aural-mock-progress>div{height:100%;width:0;background:var(--teal);transition:width .2s ease}
+  @media(max-width:760px){.aural-library-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:500px){.aural-library-grid{grid-template-columns:1fr}}
 
   /* ============================= SCORES ============================= */
   .score-strip{display:flex;gap:18px;flex-wrap:wrap;margin-top:6px;}
@@ -922,7 +937,7 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
         <div class="btnrow" style="margin-bottom:12px;">
           <label style="font-size:0.8rem;color:var(--ink-soft);font-weight:600;margin:0;">Tone:</label>
           <select id="pianoVoiceSelect" style="width:auto;">
-            <option value="grand">Studio grand (Crescendo)</option>
+            <option value="grand">Acoustic studio grand</option>
             <option value="upright">Upright piano</option>
             <option value="epiano">Electric piano</option>
             <option value="musicbox">Music box</option>
@@ -933,6 +948,7 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
           <span id="pianoOctaveLabel" style="font-size:0.8rem;color:var(--ink-soft);">C4&ndash;G5</span>
           <button class="btn outline sm" id="pianoOctaveUpBtn" title="Octave up">+8</button>
           <button class="btn brass sm" id="pianoMaximizeBtn" type="button" title="Maximize piano">⛶ Maximize</button>
+          <button class="btn outline sm" id="pianoCalibrateBtn" type="button" title="Play a short audio check">🔊 Audio check</button>
           <label style="font-size:0.8rem;color:var(--ink-soft);font-weight:600;margin:0 0 0 6px;">Audio</label><input type="range" id="cresAudioVolume" min="100" max="200" value="175" step="1" style="width:110px;accent-color:var(--brass);" aria-label="Crescendo audio volume"><span id="cresAudioVolumeLabel" style="font-size:0.75rem;color:var(--ink-soft);">175%</span>
         </div>
         <div id="pianoOrientationHint" class="piano-orientation-hint" hidden>↻ Rotate your iPad/phone to landscape for the best piano experience.</div>
@@ -1200,6 +1216,27 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
         <div class="aural-transport-progress"><div id="auralTransportProgress"></div></div>
         <div class="btnrow" style="margin-top:8px;"><span class="pill2" id="auralTransportStatus">Ready to listen</span><span class="sub" id="auralTransportTime">0:00</span></div>
         <div class="sub" id="auralTransportHint" style="margin-top:8px;">Pip tip: first listen for the big idea; second listen for the detail.</div>
+      </div>
+
+      <div class="card aural-library-card">
+        <h2>🎹 Piano Listening Library</h2>
+        <p class="sub">Original piano miniatures for ear training. They are not copied from official ABRSM tests. Use different examples each time so Mihira learns the listening skill rather than memorising an answer.</p>
+        <div class="aural-library-grid" id="auralLibraryGrid"></div>
+        <div class="feedback" id="auralLibraryFeedback">Choose a miniature. Pip will tell you what to listen for before you play it.</div>
+      </div>
+
+      <div class="card">
+        <h2>🎧 Aural Mock · Exam Simulation</h2>
+        <p class="sub">A quiet, feedback-free simulation. Listen first, answer second. Pip does not reveal correctness until the mock is finished.</p>
+        <div class="pill2" id="auralMockStatus">Ready</div>
+        <div class="aural-mock-progress"><div id="auralMockProgress"></div></div>
+        <div id="auralMockArea"></div>
+        <div class="btnrow" style="margin-top:10px">
+          <button class="btn brass" id="auralMockStart">▶ Start Mock</button>
+          <button class="btn" id="auralMockNext" disabled>Next</button>
+          <button class="btn" id="auralMockFinish" disabled>Finish</button>
+        </div>
+        <div class="feedback" id="auralMockResult">The mock will contain pulse/metre, echo, pitch-change and musical-feature tasks.</div>
       </div>
 
       <div class="card">
@@ -2568,13 +2605,13 @@ let audioUnlocked=false;
 function audioOut(c){
   if(!cresAudioBus){
     cresAudioBus=c.createGain();
-    cresAudioBus.gain.value=1.55;
+    cresAudioBus.gain.value=2.05;
     cresAudioCompressor=c.createDynamicsCompressor();
-    cresAudioCompressor.threshold.value=-10;
-    cresAudioCompressor.knee.value=18;
-    cresAudioCompressor.ratio.value=3.2;
+    cresAudioCompressor.threshold.value=-16;
+    cresAudioCompressor.knee.value=20;
+    cresAudioCompressor.ratio.value=4.5;
     cresAudioCompressor.attack.value=.003;
-    cresAudioCompressor.release.value=.16;
+    cresAudioCompressor.release.value=.18;
     cresAudioBus.connect(cresAudioCompressor);
     cresAudioCompressor.connect(c.destination);
   }
@@ -2685,22 +2722,91 @@ function suddenTone(freq,fromGain,toGain,duration){const c=ctx(),osc=c.createOsc
 function animateMeter(el,from,to,duration,sudden){const start=performance.now();function step(now){const p=Math.min(1,(now-start)/(duration*1000));el.style.width=Math.round((sudden?(p<.5?from:to):from+(to-from)*p)*100)+'%';if(p<1)requestAnimationFrame(step);}requestAnimationFrame(step);}
 const NOTE_FREQ=new Proxy({C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99},{get:(target,prop)=>prop in target?target[prop]:noteFrequency(prop)||undefined});
 const PIANO_VOICES={
-  grand:{attack:.004,release:.78,inharmonic:.00042,hammer:true,body:.09,harmonics:[{m:1,a:.84,d:1},{m:2,a:.38,d:.84},{m:3,a:.22,d:.7},{m:4,a:.14,d:.58},{m:5,a:.09,d:.49},{m:6,a:.06,d:.41},{m:7,a:.043,d:.35},{m:8,a:.031,d:.30},{m:9,a:.023,d:.26},{m:10,a:.016,d:.22},{m:11,a:.012,d:.19},{m:12,a:.009,d:.17}]},
-  upright:{attack:.005,release:.52,inharmonic:.00052,hammer:true,body:.07,harmonics:[{m:1,a:.72,d:1},{m:2,a:.31,d:.76},{m:3,a:.18,d:.58},{m:4,a:.11,d:.48},{m:5,a:.07,d:.39},{m:6,a:.045,d:.32},{m:7,a:.029,d:.27},{m:8,a:.019,d:.23},{m:9,a:.012,d:.20}]},
-  epiano:{attack:.003,release:.45,inharmonic:0,hammer:false,body:0,harmonics:[{m:1,a:.50,d:1},{m:2,a:.16,d:.5},{m:4.2,a:.09,d:.25}]},musicbox:{attack:.001,release:.7,inharmonic:0,hammer:false,body:0,harmonics:[{m:1,a:.4,d:.75},{m:3,a:.24,d:.45},{m:6,a:.14,d:.28}]},organ:{attack:.012,release:.06,inharmonic:0,hammer:false,body:0,harmonics:[{m:1,a:.34,d:1.6},{m:2,a:.26,d:1.6},{m:3,a:.16,d:1.6},{m:4,a:.10,d:1.6}]},synth:{attack:.006,release:.22,inharmonic:0,hammer:false,body:0,harmonics:[{m:1,a:.32,d:1}]}
+  grand:{
+    attack:.006,release:.92,inharmonic:.00036,hammer:true,body:0,
+    harmonics:[
+      {m:1,a:.96,d:1.00},{m:2,a:.34,d:.86},{m:3,a:.20,d:.72},{m:4,a:.12,d:.61},
+      {m:5,a:.078,d:.52},{m:6,a:.052,d:.44},{m:7,a:.036,d:.38},{m:8,a:.025,d:.33},
+      {m:9,a:.018,d:.29},{m:10,a:.013,d:.25},{m:11,a:.010,d:.22},{m:12,a:.007,d:.19},
+      {m:13,a:.005,d:.17},{m:14,a:.004,d:.15}
+    ]
+  },
+  upright:{
+    attack:.007,release:.62,inharmonic:.00046,hammer:true,body:0,
+    harmonics:[
+      {m:1,a:.90,d:1},{m:2,a:.31,d:.80},{m:3,a:.18,d:.64},{m:4,a:.105,d:.53},
+      {m:5,a:.068,d:.45},{m:6,a:.045,d:.38},{m:7,a:.030,d:.32},{m:8,a:.020,d:.27},
+      {m:9,a:.014,d:.23},{m:10,a:.010,d:.20}
+    ]
+  },
+  epiano:{attack:.003,release:.45,inharmonic:0,hammer:false,body:0,harmonics:[{m:1,a:.50,d:1},{m:2,a:.16,d:.5},{m:4.2,a:.09,d:.25}]},
+  musicbox:{attack:.001,release:.7,inharmonic:0,hammer:false,body:0,harmonics:[{m:1,a:.4,d:.75},{m:3,a:.24,d:.45},{m:6,a:.14,d:.28}]},
+  organ:{attack:.012,release:.06,inharmonic:0,hammer:false,body:0,harmonics:[{m:1,a:.34,d:1.6},{m:2,a:.26,d:1.6},{m:3,a:.16,d:1.6},{m:4,a:.10,d:1.6}]},
+  synth:{attack:.006,release:.22,inharmonic:0,hammer:false,body:0,harmonics:[{m:1,a:.32,d:1}]}
 };
 let pianoVoice='grand';
 function playPianoNote(freq,startOffset,duration,velocity,voiceName,releaseOverride){
   if(!Number.isFinite(freq)||freq<=0)return;
-  const v=PIANO_VOICES[voiceName]||PIANO_VOICES.grand,c=ctx(),t0=c.currentTime+Math.max(0,startOffset||0);const vel=Math.max(.01,Math.min(.95,velocity||.5)),release=releaseOverride??v.release;
-  const body=c.createBiquadFilter();body.type='lowpass';body.Q.value=.65;const cutoff=Math.min(11000,2600+Math.min(7000,7200*vel)*(0.72+0.28/Math.max(.5,Math.min(2.2,261.63/Math.max(40,freq)))));body.frequency.setValueAtTime(Math.max(900,cutoff),t0);body.frequency.exponentialRampToValueAtTime(Math.max(650,cutoff*.42),t0+duration+release*.75);
-  const master=c.createGain();master.gain.setValueAtTime(.0001,t0);master.gain.linearRampToValueAtTime(Math.min(.98,vel*.90),t0+v.attack);master.gain.exponentialRampToValueAtTime(.0001,t0+duration+release);body.connect(master);master.connect(audioOut(c));
-  const detunes=voiceName==='grand'?(freq<180?[-.55,.55]:freq<520?[-1.35,0,1.35]:[-1,0,1]):[0];
-  v.harmonics.forEach((h,hi)=>detunes.forEach((cents,di)=>{const osc=c.createOscillator(),g=c.createGain(),B=v.inharmonic*Math.max(.55,Math.min(2.5,261.63/Math.max(40,freq))),stretch=v.inharmonic?Math.sqrt(1+B*h.m*h.m):1;osc.type='sine';osc.frequency.value=freq*h.m*stretch;osc.detune.value=cents;const peak=Math.max(.0002,vel*h.a*(detunes.length===3?(di===1?1.12:.94):1)/(detunes.length===3?2.15:1)),d=Math.max(.08,duration*h.d);g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(peak,t0+v.attack*(hi?1:.72));g.gain.exponentialRampToValueAtTime(Math.max(.00004,peak*.025),t0+d*.78);g.gain.exponentialRampToValueAtTime(.0001,t0+d+release);osc.connect(g);g.connect(body);trackAudioNode(osc);osc.start(t0);osc.stop(t0+d+release+.04);}));
-  if(v.hammer){const nd=.03,b=c.createBuffer(1,Math.max(1,Math.floor(c.sampleRate*nd)),c.sampleRate),data=b.getChannelData(0);for(let i=0;i<data.length;i++){const x=i/data.length;data[i]=(Math.random()*2-1)*Math.pow(1-x,2.4)*(.65+.35*Math.sin(Math.PI*x));}const src=c.createBufferSource(),bp=c.createBiquadFilter(),hp=c.createBiquadFilter(),ng=c.createGain();src.buffer=b;hp.type='highpass';hp.frequency.value=Math.min(6500,Math.max(700,freq*1.7));bp.type='bandpass';bp.frequency.value=Math.min(5200,Math.max(1300,freq*3.1));bp.Q.value=.75;ng.gain.setValueAtTime(vel*.065,t0);ng.gain.exponentialRampToValueAtTime(.0001,t0+nd);src.connect(hp);hp.connect(bp);bp.connect(ng);ng.connect(body);trackAudioNode(src);src.start(t0);src.stop(t0+nd+.01);}
-  if(v.body){[.42,.73].forEach((ratio,i)=>{const bloom=c.createOscillator(),bg=c.createGain();bloom.type='sine';bloom.frequency.value=Math.max(75,Math.min(420,freq*ratio));bg.gain.setValueAtTime(.0001,t0);bg.gain.linearRampToValueAtTime(vel*v.body*(i?.45:1),t0+.025);bg.gain.exponentialRampToValueAtTime(.0001,t0+Math.min(1.7,duration+release*.85));bloom.connect(bg);bg.connect(audioOut(c));trackAudioNode(bloom);bloom.start(t0);bloom.stop(t0+1.8);});}
-}
+  const v=PIANO_VOICES[voiceName]||PIANO_VOICES.grand,c=ctx(),t0=c.currentTime+Math.max(0,startOffset||0);
+  const vel=Math.max(.01,Math.min(.95,velocity||.5)),release=releaseOverride??v.release;
 
+  // Piano body/resonance filter: bright at the attack, then naturally darkens.
+  const body=c.createBiquadFilter(); body.type='lowpass'; body.Q.value=.45;
+  const brightness=Math.min(11800,2600+8200*Math.pow(vel,.72));
+  body.frequency.setValueAtTime(Math.max(1100,brightness),t0);
+  body.frequency.exponentialRampToValueAtTime(Math.max(800,brightness*.38),t0+duration+release*.72);
+
+  const master=c.createGain();
+  const peak=Math.min(.82,vel*.76);
+  master.gain.setValueAtTime(.0001,t0);
+  master.gain.linearRampToValueAtTime(peak,t0+v.attack);
+  master.gain.exponentialRampToValueAtTime(.0001,t0+duration+release);
+  body.connect(master); master.connect(audioOut(c));
+
+  // Very small stereo-like detune only on the fundamental/upper body.
+  const detunes=voiceName==='grand'
+    ? (freq<180?[-.35,.35]:freq<520?[-.75,0,.75]:[-.55,0,.55])
+    : [0];
+
+  v.harmonics.forEach((h,hi)=>{
+    detunes.forEach((cents,di)=>{
+      const osc=c.createOscillator(), g=c.createGain();
+      const B=v.inharmonic*Math.max(.55,Math.min(2.4,261.63/Math.max(40,freq)));
+      const stretch=v.inharmonic?Math.sqrt(1+B*h.m*h.m):1;
+      // A subtle triangle contribution in the upper partials makes the timbre less like a pure synth.
+      osc.type=(voiceName==='grand' && hi>=3 && hi%4===0)?'triangle':'sine';
+      osc.frequency.value=freq*h.m*stretch;
+      osc.detune.value=cents;
+      const center=(detunes.length===3?(di===1?1.08:.94):1);
+      const partialPeak=Math.max(.00015,vel*h.a*center/(detunes.length===3?2.25:1));
+      const d=Math.max(.09,duration*h.d);
+      g.gain.setValueAtTime(.0001,t0);
+      g.gain.linearRampToValueAtTime(partialPeak,t0+v.attack*(hi?1:.72));
+      g.gain.exponentialRampToValueAtTime(Math.max(.00003,partialPeak*.028),t0+d*.76);
+      g.gain.exponentialRampToValueAtTime(.0001,t0+d+release);
+      osc.connect(g); g.connect(body); trackAudioNode(osc);
+      osc.start(t0); osc.stop(t0+d+release+.05);
+    });
+  });
+
+  // Short felt/hammer transient. Kept quiet enough to sound acoustic rather than noisy.
+  if(v.hammer){
+    const nd=.035;
+    const b=c.createBuffer(1,Math.max(1,Math.floor(c.sampleRate*nd)),c.sampleRate);
+    const data=b.getChannelData(0);
+    for(let i=0;i<data.length;i++){
+      const x=i/data.length;
+      data[i]=(Math.random()*2-1)*Math.pow(1-x,2.8)*(.48+.52*Math.sin(Math.PI*x));
+    }
+    const src=c.createBufferSource(),hp=c.createBiquadFilter(),bp=c.createBiquadFilter(),ng=c.createGain();
+    src.buffer=b;
+    hp.type='highpass'; hp.frequency.value=Math.min(7200,Math.max(900,freq*1.9));
+    bp.type='bandpass'; bp.frequency.value=Math.min(6000,Math.max(1500,freq*3.0)); bp.Q.value=.7;
+    ng.gain.setValueAtTime(vel*.045,t0); ng.gain.exponentialRampToValueAtTime(.0001,t0+nd);
+    src.connect(hp); hp.connect(bp); bp.connect(ng); ng.connect(body);
+    trackAudioNode(src); src.start(t0); src.stop(t0+nd+.01);
+  }
+}
 function playMelody(notes, startAt, noteLen, gap){
   // short release override: these notes are heard back-to-back for pitch/position judgement,
   // so each one needs to stop clearly before the next starts rather than ringing into it.
@@ -2957,6 +3063,111 @@ function playPulsePattern(beatsPerBar, tempo, bars, accentGap){
   for(let bar=0;bar<bars;bar++){ const bt=bar*beatsPerBar*interval; playPianoNote(NOTE_FREQ[bass],bt,interval*.85,.075,pianoVoice,.05); }
   return t;
 }
+
+/* ---------------- Aural Piano Listening Studio v1.6 ---------------- */
+const AURAL_LISTENING_LIBRARY = [
+{name:'Morning Steps',skill:'2 time · steady pulse',key:'C',notes:['C4','E4','G4','E4','D4','F4','A4','F4','E4','G4','C5','G4','F4','E4','D4','C4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,1],tip:'Feel the strong beat returning every two pulses.'},
+{name:'Garden Dance',skill:'3 time · waltz feel',key:'C',notes:['C5','G4','E4','G4','C5','A4','F4','A4','G4','E4','C4','E4','F4','A4','G4','E4','D4','C4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,1],tip:'Feel ONE-two-three, with a gentle lift into the next bar.'},
+{name:'Blue Window',skill:'2 time · melody + accompaniment',key:'F',notes:['F4','A4','C5','A4','G4','Bb4','D5','Bb4','A4','C5','F5','C5','Bb4','A4','G4','F4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,1],tip:'Listen past the melody and notice the bass returning to the strong beat.'},
+{name:'Bluebird Waltz',skill:'3 time · phrase shape',key:'F',notes:['F4','C5','A4','F4','G4','D5','Bb4','G4','A4','C5','F5','C5','Bb4','A4','G4','F4','E4','F4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,1],tip:'Hear the three-beat cycle underneath the singing line.'},
+{name:'Clockwork Walk',skill:'2 time · crisp pulse',key:'G',notes:['G4','A4','B4','D5','B4','A4','G4','B4','D5','E5','D5','B4','A4','G4','A4','G4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,1],tip:'The pulse stays steady even while the melody moves.'},
+{name:'River Boat',skill:'3 time · flowing line',key:'G',notes:['G4','D5','B4','A4','G4','A4','B4','D5','C5','B4','A4','G4','D4','E4','G4','A4','G4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,1],tip:'Listen for the rocking three-beat motion.'},
+{name:'Quiet Stream',skill:'2 time · soft character',key:'C',notes:['E4','G4','C5','G4','F4','A4','C5','A4','G4','E4','D4','F4','E4','G4','C5','G4','E4','C4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,.5,1],tip:'Try to hear the pulse without relying on loud accents.'},
+{name:'Growing Song',skill:'gradual crescendo · legato',key:'C',notes:['F4','G4','A4','C5','D5','C5','A4','F4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5],dyn:'gradual',art:'smooth',tip:'Hear the sound grow continuously, not in jumps.'},
+{name:'Sudden Door',skill:'sudden dynamic · staccato',key:'C',notes:['C4','E4','G4','E4','C5','B4','A4','G4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5],dyn:'sudden',art:'detached',tip:'Notice exactly where the sound changes and whether the notes separate.'},
+{name:'Moonlit Rise',skill:'crescendo · legato',key:'C',notes:['D4','F4','A4','G4','F4','E4','D4','C4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5],dyn:'gradual',art:'smooth',tip:'Listen for a controlled rise in sound across the phrase.'},
+{name:'Clock Bell',skill:'sudden change · detached',key:'G',notes:['G4','G4','A4','B4','D5','B4','A4','G4'],dur:[.5,.5,.5,.5,.5,.5,.5,.5],dyn:'sudden',art:'detached',tip:'The dynamic change is deliberately placed inside the phrase.'},
+{name:'Surprise Turn',skill:'sudden change · articulation',key:'C',notes:['A4','G4','F4','E4','D4','F4','A4','C5'],dur:[.5,.5,.5,.5,.5,.5,.5,.5],dyn:'sudden',art:'detached',tip:'First hear the loud/soft change; then hear the gaps between notes.'}
+];
+
+function renderAuralListeningLibrary(){
+  const grid=document.getElementById('auralLibraryGrid'); if(!grid)return;
+  grid.innerHTML=AURAL_LISTENING_LIBRARY.map((t,i)=>'<button class="aural-library-item" type="button" data-library-index="'+i+'"><b>🎵 '+t.name+'</b><small>'+t.skill+'</small><span class="tag">Pip tip</span></button>').join('');
+  grid.querySelectorAll('[data-library-index]').forEach(btn=>btn.addEventListener('click',()=>{
+    const t=AURAL_LISTENING_LIBRARY[Number(btn.dataset.libraryIndex)];
+    const tempo=t.notes.length>10?88:76;
+    const dyn=t.dyn==='gradual'?.12:t.dyn==='sudden'?.16:.20;
+    const feedback=document.getElementById('auralLibraryFeedback');
+    if(feedback) feedback.innerHTML='<b>'+t.name+':</b> '+t.tip+' Listen once for the big idea, then replay for the detail.';
+    playAuralExample(()=>playPianoTune(t,tempo,t.notes.length>16?3:2,dyn),'Piano Listening Library · '+t.name,null,'Original piano miniature · '+t.skill,Math.max(3,t.notes.length*.55));
+  }));
+}
+
+let auralMockState={active:false,index:0,answers:[],tasks:[],score:0};
+
+function buildAuralMockTasks(){
+  const pulseTunes=AURAL_LISTENING_LIBRARY.filter(t=>!t.dyn);
+  const t2=pulseTunes.filter(t=>t.skill.startsWith('2 time'));
+  const t3=pulseTunes.filter(t=>t.skill.startsWith('3 time'));
+  const featureTunes=AURAL_LISTENING_LIBRARY.filter(t=>t.dyn);
+  const feature1=featureTunes[Math.floor(Math.random()*featureTunes.length)];
+  const feature2=featureTunes[Math.floor(Math.random()*featureTunes.length)];
+  const pitch=()=>PITCH_PATTERNS[Math.floor(Math.random()*PITCH_PATTERNS.length)];
+  return [
+    {type:'pulse',label:'Question 1 · Pulse / metre',prompt:'Listen and decide whether the music is in 2 or 3 time.',options:['2 time','3 time'],answer:'2 time',tune:t2[Math.floor(Math.random()*t2.length)]},
+    {type:'pulse',label:'Question 2 · Pulse / metre',prompt:'Listen to a different miniature. Which metre do you hear?',options:['2 time','3 time'],answer:'3 time',tune:t3[Math.floor(Math.random()*t3.length)]},
+    {type:'echo',label:'Question 3 · Singing / echo',prompt:'Listen to the phrase, then sing it back without looking at the notes. Parent/teacher: mark the echo as Secure or Retry.',options:['Secure','Retry'],answer:null,pattern:pitch()},
+    {type:'pitchchange',label:'Question 4 · Pitch change',prompt:'Two versions are played. Did the change happen near the beginning or near the end?',options:['Beginning','End'],answer:null},
+    {type:'feature',label:'Question 5 · Dynamics',prompt:'Listen carefully. Which dynamic behaviour do you hear?',options:['Quiet','Loud','Gradual change','Sudden change'],answer:null,tune:feature1},
+    {type:'feature',label:'Question 6 · Articulation',prompt:'Listen again. Are the notes mostly smooth or detached?',options:['Smooth / legato','Detached / staccato'],answer:null,tune:feature2}
+  ];
+}
+
+function playAuralMockTask(task){
+  if(task.type==='pulse'){
+    playAuralExample(()=>playPianoTune(task.tune,88,3,.23),'Mock · '+task.label,null,task.label,Math.max(4,task.tune.notes.length*.55));
+  }else if(task.type==='echo'){
+    const pattern=task.pattern;
+    playAuralExample(()=>{playPianoNote(NOTE_FREQ.C4,0,.72,.34,pianoVoice,.1);playPianoNote(NOTE_FREQ.E4,0,.72,.26,pianoVoice,.1);playPianoNote(NOTE_FREQ.G4,0,.72,.26,pianoVoice,.1);playMelody(pattern,1.0,.48,.24);},'Mock · '+task.label,null,task.label+' · sing back',5.5);
+  }else if(task.type==='pitchchange'){
+    const round=generateDetectiveRound('medium');
+    task.answer=round.pos==='start'?'Beginning':'End';
+    playAuralExample(()=>{const end=playMelody(round.base,0,.42,.18);playMelody(round.altered,end+.5,.42,.18);},'Mock · '+task.label,null,task.label,7.5);
+  }else if(task.type==='feature'){
+    const tune=task.tune;
+    playAuralExample(()=>{let t=0;tune.notes.forEach((n,i)=>{let amp=tune.dyn==='quiet'?.13:tune.dyn==='loud'?.40:tune.dyn==='sudden'?(i<4?.13:.40):(.12+.055*i);playPianoNote(NOTE_FREQ[n],t,.34,amp,pianoVoice,tune.art==='smooth'?.08:.025);t+=.40;});},'Mock · '+task.label,null,task.label,3.3);
+  }
+}
+
+function renderAuralMock(){
+  const area=document.getElementById('auralMockArea'); if(!area)return;
+  if(!auralMockState.active){area.innerHTML='<div class="feedback">Press <b>Start Mock</b> when Mihira is ready. During the mock, no correctness feedback is shown.</div>';return;}
+  const i=auralMockState.index,task=auralMockState.tasks[i];
+  document.getElementById('auralMockProgress').style.width=Math.round((i/auralMockState.tasks.length)*100)+'%';
+  document.getElementById('auralMockStatus').textContent='Question '+(i+1)+' of '+auralMockState.tasks.length;
+  area.innerHTML='<div class="aural-mock-question"><div class="aural-mock-qtitle">'+task.label+'</div><p class="sub">'+task.prompt+'</p><div class="btnrow" id="auralMockOptions"></div><p class="sub" style="margin-top:8px">Listen before answering. You may replay the current extract, but Pip will not tell you if you are right.</p></div>';
+  const opts=document.getElementById('auralMockOptions');
+  (task.options||[]).forEach(opt=>{const b=document.createElement('button');b.className='btn';b.textContent=opt;b.onclick=()=>{auralMockState.answers[i]=opt;opts.querySelectorAll('button').forEach(x=>x.classList.remove('brass'));b.classList.add('brass');};opts.appendChild(b);});
+  const replay=document.createElement('button');replay.className='btn';replay.textContent='▶ Replay';replay.onclick=()=>playAuralMockTask(task);opts.appendChild(replay);
+  document.getElementById('auralMockNext').disabled=i>=auralMockState.tasks.length-1;
+  document.getElementById('auralMockFinish').disabled=i!==auralMockState.tasks.length-1;
+}
+function startAuralMock(){
+  stopAllAudio();clearAuralProgress();
+  auralMockState={active:true,index:0,answers:[],tasks:buildAuralMockTasks(),score:0};
+  document.getElementById('auralMockStart').disabled=true;
+  renderAuralMock();playAuralMockTask(auralMockState.tasks[0]);
+}
+function nextAuralMock(){
+  if(!auralMockState.active||!auralMockState.answers[auralMockState.index])return;
+  auralMockState.index++;renderAuralMock();playAuralMockTask(auralMockState.tasks[auralMockState.index]);
+}
+function finishAuralMock(){
+  if(!auralMockState.active)return;
+  let score=0,scored=0;
+  auralMockState.tasks.forEach((t,i)=>{if(t.answer!==null){scored++;if(auralMockState.answers[i]===t.answer)score++;}});
+  const objectivePct=scored?Math.round(score/scored*100):null;
+  document.getElementById('auralMockProgress').style.width='100%';
+  document.getElementById('auralMockStatus').textContent='Mock complete';
+  document.getElementById('auralMockResult').innerHTML='<b>Mock complete.</b> '+(objectivePct===null?'Parent/teacher scoring required for the echo task':score+'/'+scored+' objective · '+objectivePct+'%')+'. The app is a coaching diagnostic, not an official ABRSM examiner.';
+  document.getElementById('auralMockArea').innerHTML='<div class="feedback good"><b>Review complete.</b> Keep mock feedback separate from practice feedback.</div>';
+  document.getElementById('auralMockStart').disabled=false;document.getElementById('auralMockNext').disabled=true;document.getElementById('auralMockFinish').disabled=true;
+  auralMockState.active=false;
+}
+document.getElementById('auralMockStart')?.addEventListener('click',startAuralMock);
+document.getElementById('auralMockNext')?.addEventListener('click',nextAuralMock);
+document.getElementById('auralMockFinish')?.addEventListener('click',finishAuralMock);
+
 function newPulse(){
   const opts = pulseLevelOptions();
   const beats = opts.metres[Math.floor(Math.random()*opts.metres.length)];
@@ -5479,6 +5690,15 @@ document.getElementById('invigStopBtn').addEventListener('click', async ()=>{
 
 /* ---- Piano voice selector, octave shift, sustain ---- */
 document.getElementById('pianoVoiceSelect').addEventListener('change', (e)=>{ pianoVoice = e.target.value; });
+document.getElementById('pianoCalibrateBtn')?.addEventListener('click', ()=>{
+  try{
+    unlockAudio();
+    stopAllAudio();
+    const seq=['C4','E4','G4','C5'];
+    seq.forEach((n,i)=>playPianoNote(NOTE_FREQ[n],i*.52,.72,.58,pianoVoice,.18));
+    if(typeof showToast==='function')showToast('Audio check: C–E–G–C. Set iPad volume to a comfortable level.');
+  }catch(e){ console.warn('Audio calibration failed',e); }
+});
 document.getElementById('cresAudioVolume')?.addEventListener('input',(e)=>{const pct=Math.max(100,Math.min(200,Number(e.target.value)||175)); const v=pct/100; if(cresAudioBus) cresAudioBus.gain.value=v; document.getElementById('cresAudioVolumeLabel').textContent=pct+'%';});
 const OCTAVE_LABELS = {'-2':'C2–G3','-1':'C3–G4','0':'C4–G5','1':'C5–G6','2':'C6–G7'};
 document.getElementById('pianoOctaveDownBtn').addEventListener('click', ()=>{
@@ -5929,6 +6149,7 @@ document.getElementById('srNewBtn')?.addEventListener('click',srGenerate);docume
   await loadPieceMap();
   renderCrescGameRow();
 
+  renderAuralListeningLibrary();
   newPulse();
   newRhythm();
   newPitch();
