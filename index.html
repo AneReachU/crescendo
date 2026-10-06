@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- AURAL 2.2.1 polish: contextual console, ABRSM-style singing support, sequential Test D, robust 10-question drill -->
 <title>Crescendo — Mihira's Musical Universe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -645,6 +646,20 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
 .creator-launch-card p.sub{color:#e5dbe2 !important;-webkit-text-fill-color:#e5dbe2 !important}
 .creator-launch-card .eyebrow{color:#72e8da !important;-webkit-text-fill-color:#72e8da !important}
 .creator-launch-card .btn.brass{color:#201a21 !important;-webkit-text-fill-color:#201a21 !important}
+
+/* Aural 2.1 — child-first listening UI */
+.aural-listen-card{background:linear-gradient(135deg,rgba(255,250,240,.96),rgba(238,250,248,.96));}.aural-now-active{border-color:rgba(17,157,142,.24)!important;box-shadow:0 8px 24px rgba(17,157,142,.08)}.aural-now-playing{color:#087c69;font-weight:800}.aural-answer-step{padding:11px 13px;border-radius:14px;background:#f7f7fb;border:1px solid #e6e7ef;margin-top:10px}.aural-answer-step[hidden]{display:none}.aural-question-kicker{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:#687085;font-weight:900;margin-bottom:3px}
+.aural-now{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 16px;border:1px solid rgba(24,30,50,.08);border-radius:18px;background:rgba(255,255,255,.72);}
+.aural-now .eyebrow{margin-bottom:3px;}
+.aural-transport-progress{height:7px;border-radius:99px;background:#e9e7ee;overflow:hidden;margin-top:10px;}
+.aural-transport-progress>div{height:100%;width:0%;background:var(--teal);transition:width .12s linear;}
+.aural-step{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.78);border:1px solid rgba(24,30,50,.07);margin-top:10px;}
+.aural-step strong{font-size:1rem;}
+.aural-coach-mini{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.aural-coach-mini span{padding:7px 10px;border-radius:999px;background:#f3f0f7;font-size:.78rem;font-weight:700;}
+.aural-extension-head{margin-top:22px;padding:14px 16px;border-radius:18px;background:linear-gradient(90deg,#f5f0ff,#fff7e8);border:1px dashed #cfc6dc;}
+.aural-extension-head h3{margin:0 0 4px;}
+@media(max-width:600px){.aural-now{grid-template-columns:1fr}.aural-now .btn{width:100%}.aural-coach-mini{gap:6px}}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1142,9 +1157,47 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
         <p>Train the four Grade 1 Aural tasks exactly as specified by ABRSM, with optional ear-training extensions clearly separated.</p>
       </div>
 
+      <div class="card aural-listen-card" id="auralTransportCard">
+        <h2>🎧 Listening Console</h2>
+        <p class="sub">One simple player for every Aural example. <b>Listen first.</b> Replay when you want another go. Stop any time — stopping never reveals the answer.</p>
+        <div class="aural-now" id="auralNowBox">
+          <div><div class="eyebrow">NOW LISTENING</div><div id="auralNowLabel" style="font-family:'Fraunces',serif;font-size:1.25rem;">Choose an Aural example below</div><div class="sub" id="auralNowMeta" style="margin-top:3px;">Pip will show the task and difficulty here.</div></div>
+          <div class="btnrow" style="margin:0;justify-content:flex-end;">
+            <button class="btn brass" id="auralReplayBtn" disabled>▶ Play / Replay</button>
+            <button class="btn outline" id="auralStopBtn">■ Stop</button>
+          </div>
+        </div>
+        <div class="aural-transport-progress"><div id="auralTransportProgress"></div></div>
+        <div class="btnrow" style="margin-top:8px;"><span class="pill2" id="auralTransportStatus">Ready to listen</span><span class="sub" id="auralTransportTime">0:00</span></div>
+        <div class="sub" id="auralTransportHint" style="margin-top:8px;">Pip tip: first listen for the big idea; second listen for the detail.</div>
+      </div>
+
+      <div class="card">
+        <h2>🎯 Aural Skill Dashboard</h2>
+        <p class="sub">Your practice score is separated by listening skill so Pip can target the weakest area instead of giving you more of what you already know.</p>
+        <div class="score-strip" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;">
+          <div class="score-chip"><div class="num" id="auralDashPulse">0%</div><div class="lbl">Pulse / metre</div></div>
+          <div class="score-chip"><div class="num" id="auralDashPitch">0%</div><div class="lbl">Pitch</div></div>
+          <div class="score-chip"><div class="num" id="auralDashFeature">0%</div><div class="lbl">Musical features</div></div>
+          <div class="score-chip"><div class="num" id="auralDashRhythm">0%</div><div class="lbl">Rhythm extension</div></div>
+        </div>
+        <div class="sub" style="margin-top:10px;">Practice percentages are coaching diagnostics, not ABRSM marks.</div>
+        <div class="feedback" id="auralDashAdvice">Complete a few questions and Pip will identify the next best listening skill.</div>
+      </div>
+
+      <div class="card">
+        <h2>Aural Coach Loop</h2>
+        <p class="sub">Pip guides one small question at a time: <b>Listen → Think → Answer → Explain → Replay → Try again.</b> Coaching stays on here; it is off in Mock Exam mode.</p>
+        <div class="aural-coach-mini"><span>🎧 Listen</span><span>💭 Think</span><span>✅ Answer</span><span>💡 Explain</span><span>🔁 Try again</span></div><div class="sub" style="margin-top:9px;">Pip chooses a balanced five-question session, then points Mihira to the skill that needs the most work.</div>
+        <div class="btnrow">
+          <button class="btn brass" id="auralCoachStart">Start 5-question coached set</button>
+        </div>
+        <div id="auralCoachArea" style="margin-top:12px;"></div>
+      </div>
+
       <div class="card">
         <h2>Aural Test A &middot; Pulse &amp; two or three time</h2>
-        <p class="sub">Listen to a short original piano miniature played by the examiner. Clap the pulse as soon as you can, emphasise the strong beats, then decide whether it is in two time or three time. These examples use melody, accompaniment, phrase shape and varied rhythms — not a click track.</p>
+        <p class="sub">🎧 <b>Listen.</b> Find the steady pulse. 👏 Feel the strong beat. Then answer one simple question: <b>Is it in 2 or 3?</b> These original piano examples use melody and accompaniment, not a click track.</p>
         <div class="btnrow" style="margin-bottom:10px;">
           <label style="font-size:0.8rem;color:var(--ink-soft);font-weight:600;margin:0;">Difficulty:</label>
           <select id="pulseLevel" style="width:auto;"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select>
@@ -1168,9 +1221,11 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
         </div>
       </div>
 
+      <div class="aural-extension-head"><h3>🌟 Beyond Grade 1</h3><div class="sub">Optional ear-training. Useful for musicianship, but <b>not part of the Grade 1 Piano Aural mark.</b></div></div>
+
       <div class="card">
         <h2>Ear-training extension &middot; Rhythm echo <span class="pill2">NOT A GRADE 1 PIANO TEST</span></h2>
-        <p class="sub">The app claps a short rhythm. Mihira echoes it back on the piano lid or table. Reveal to check, then mark it.</p>
+        <p class="sub">🎧 Listen to the rhythm. 👏 Echo it back on the piano lid or table. Then reveal the pattern and check yourself.</p>
         <div class="btnrow" style="margin-bottom:10px;">
           <label style="font-size:0.8rem;color:var(--ink-soft);font-weight:600;margin:0;">Difficulty:</label>
           <select id="rhythmLevel" style="width:auto;"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select>
@@ -1200,26 +1255,30 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
 
       <div class="card">
         <h2>Aural Test B &middot; Singing echoes</h2>
-        <p class="sub">Grade 1 requires three sung two-bar echoes. Each phrase is in a major key and stays within tonic–mediant. The app gives the key-chord and starting tonic, then Mihira sings the echo back.</p>
+        <p class="sub">Grade 1 has three sung two-bar echoes. Each phrase is in a major key and stays within the tonic–mediant range.</p>
+        <div class="aural-step"><strong>1 · 🎧 Listen</strong><div class="sub">Hear the key-chord, starting tonic and phrase.</div></div>
+        <div class="aural-step"><strong>2 · 🎤 Sing it back</strong><div class="sub">Start straight away and keep the shape of the phrase.</div></div>
+        <div class="aural-step"><strong>3 · 📊 Check pitch</strong><div class="sub">Practice feedback can estimate pitch. It cannot judge vocal tone.</div></div>
         <div class="btnrow" style="margin-bottom:10px;">
           <label style="font-size:0.8rem;color:var(--ink-soft);font-weight:600;margin:0;">Practice support:</label>
           <select id="pitchLevel" style="width:auto;"><option value="easy">Slower support</option><option value="medium" selected>Standard</option><option value="hard">Less support</option></select>
         </div>
         <div class="btnrow">
-          <button class="btn brass" id="pitchPlay">Play 2-bar phrase</button>
-          <button class="btn outline sm" id="pitchReveal">Show notes (practice)</button>
+          <button class="btn brass" id="pitchPlay">▶ Listen · phrase 1 of 3</button>
+          <button class="btn outline sm" id="pitchReveal">👀 Show notes · practice only</button>
           <button class="btn outline sm" id="pitchNew">New 2-bar phrase</button>
         </div>
+        <div class="feedback" id="pitchFeedback">Listen to the key-chord and starting tonic first. Then sing the phrase back without a pause.</div>
         <div style="font-family:'Fraunces',serif;font-size:1.3rem;margin:10px 0;" id="pitchViz">&nbsp;</div>
         <div class="btnrow">
-          <button class="btn outline sm" onclick="markResult('pitch',true)">She got it</button>
-          <button class="btn outline sm" onclick="markResult('pitch',false)">Needs another go</button>
+          <button class="btn outline sm" onclick="markResult('pitch',true)">✓ She got it</button>
+          <button class="btn outline sm" onclick="markResult('pitch',false)">↻ Another go</button>
         </div>
         <div class="score-strip"><div class="score-chip"><div class="num" id="pitchScore">0/0</div><div class="lbl">this session</div></div></div>
 
         <div class="rec-card">
-          <h4>Live pitch check for her singing</h4>
-          <p class="sub">The examiner plays from the piano: key-chord, starting tonic, count-in, then the two-bar phrase. Mihira sings it back without a pause. For a full Grade 1-style practice set, complete three different phrases. Pitch is assessed; vocal tone is not.</p>
+          <h4>🎤 Sing the echo live</h4>
+          <p class="sub">Play the phrase, then have Mihira sing it back without a pause. For a full Grade 1-style practice set, complete three different phrases. Pitch is assessed; vocal tone is not.</p>
           <div class="btnrow">
             <button class="btn outline sm" id="pitchRecordBtn">Record &amp; check pitch</button>
             <button class="btn rec sm" id="pitchLiveBtn">Sing the echo live</button>
@@ -1255,13 +1314,13 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
         <div class="btnrow">
           <button class="btn brass" id="featurePlay">Play the extract</button>
         </div>
-        <div class="feature-question" style="margin-top:12px;"><b>Dynamics question</b><div class="btnrow" style="margin-top:8px;">
+        <div class="feature-question" id="featureDynQuestion" style="margin-top:12px;"><div class="aural-question-kicker">Question 1</div><b>Dynamics</b><div class="sub">What did you hear?</div><div class="btnrow" style="margin-top:8px;">
           <button class="btn outline sm" data-dyn="loud" disabled>Loud</button>
           <button class="btn outline sm" data-dyn="quiet" disabled>Quiet</button>
           <button class="btn outline sm" data-dyn="sudden" disabled>Sudden change</button>
           <button class="btn outline sm" data-dyn="gradual" disabled>Gradual change</button>
         </div></div>
-        <div class="feature-question" style="margin-top:12px;"><b>Articulation question</b><div class="btnrow" style="margin-top:8px;">
+        <div class="feature-question aural-answer-step" id="featureArtQuestion" hidden><div class="aural-question-kicker">Question 2</div><b>Articulation</b><div class="sub">Now listen for how the notes are played.</div><div class="btnrow" style="margin-top:8px;">
           <button class="btn outline sm" data-feat="smooth" disabled>Smooth (legato)</button>
           <button class="btn outline sm" data-feat="detached" disabled>Detached (staccato)</button>
         </div></div>
@@ -2503,6 +2562,49 @@ function noteFrequency(name){
   const midi=(parseInt(m[3],10)+1)*12+pc;
   return 440*Math.pow(2,(midi-69)/12);
 }
+const activeAudioNodes = new Set();
+function trackAudioNode(node){
+  activeAudioNodes.add(node);
+  try{ node.addEventListener?.('ended', ()=>activeAudioNodes.delete(node)); }catch(e){}
+  return node;
+}
+function stopAllAudio(){
+  activeAudioNodes.forEach(node=>{ try{ node.stop?.(); }catch(e){} });
+  activeAudioNodes.clear();
+  document.getElementById('auralTransportStatus')?.replaceChildren(document.createTextNode('Stopped'));
+}
+let auralLastReplay=null, auralLastLabel='Example', auralLastContext='', auralLastDuration=0, auralProgressTimer=null, auralProgressStart=0;
+function clearAuralProgress(){
+  if(auralProgressTimer){clearInterval(auralProgressTimer);auralProgressTimer=null;}
+  const bar=document.getElementById('auralTransportProgress'); if(bar) bar.style.width='0%';
+  const tm=document.getElementById('auralTransportTime'); if(tm) tm.textContent='0:00';
+}
+function setAuralContext(label,context,duration){
+  auralLastLabel=label||'Example'; auralLastContext=context||label||'Aural example'; auralLastDuration=Number(duration)||0;
+  const now=document.getElementById('auralNowLabel'); if(now) now.textContent=auralLastContext;
+  const meta=document.getElementById('auralNowMeta'); if(meta) meta.textContent=auralLastDuration?'Practice listening · about '+auralLastDuration.toFixed(1)+' seconds':'Practice listening · replay available';
+  const box=document.getElementById('auralNowBox'); if(box) box.classList.add('aural-now-active');
+}
+function setAuralReplay(fn,label,context,duration){
+  auralLastReplay=fn; setAuralContext(label,context,duration);
+  const b=document.getElementById('auralReplayBtn'); if(b){b.disabled=false;b.textContent='▶ Play / Replay';}
+  const st=document.getElementById('auralTransportStatus'); if(st) st.textContent='Ready to listen';
+}
+function playAuralExample(fn,label,durationOverride,context,duration){
+  stopAllAudio(); clearAuralProgress();
+  const dur=Number(durationOverride)||Number(duration)||0;
+  setAuralReplay(fn,label,context,dur);
+  const st=document.getElementById('auralTransportStatus'); if(st) st.textContent='Playing · '+(context||label||'Example');
+  const started=performance.now(); auralProgressStart=started;
+  const total=dur||5;
+  auralProgressTimer=setInterval(()=>{
+    const elapsed=(performance.now()-started)/1000, pct=Math.min(100,(elapsed/total)*100);
+    const bar=document.getElementById('auralTransportProgress'); if(bar) bar.style.width=pct+'%';
+    const tm=document.getElementById('auralTransportTime'); if(tm) tm.textContent='0:'+String(Math.floor(elapsed)).padStart(2,'0');
+    if(elapsed>=total){clearAuralProgress(); if(st) st.textContent='Ready · Replay whenever you want';}
+  },80);
+  fn();
+}
 function toneAt(freq, startOffset, duration, gain, type){
   const c = ctx();
   const osc = c.createOscillator();
@@ -2515,7 +2617,7 @@ function toneAt(freq, startOffset, duration, gain, type){
   g.gain.setValueAtTime(gain, t0+Math.max(duration-0.08,0.03));
   g.gain.linearRampToValueAtTime(0.0001, t0+duration);
   osc.connect(g); g.connect(audioOut(c));
-  osc.start(t0); osc.stop(t0+duration+0.02);
+  trackAudioNode(osc); osc.start(t0); osc.stop(t0+duration+0.02);
 }
 function clickAt(startOffset, accent){
   const c = ctx();
@@ -2525,7 +2627,7 @@ function clickAt(startOffset, accent){
   g.gain.setValueAtTime(accent?0.4:0.22, t0);
   g.gain.exponentialRampToValueAtTime(0.0001, t0+0.09);
   osc.connect(g); g.connect(audioOut(c));
-  osc.start(t0); osc.stop(t0+0.1);
+  trackAudioNode(osc); osc.start(t0); osc.stop(t0+0.1);
 }
 function rampTone(freq, fromGain, toGain, duration){
   const c = ctx();
@@ -2535,7 +2637,7 @@ function rampTone(freq, fromGain, toGain, duration){
   g.gain.setValueAtTime(Math.max(fromGain,0.0001), t0);
   g.gain.linearRampToValueAtTime(Math.max(toGain,0.0001), t0+duration);
   osc.connect(g); g.connect(audioOut(c));
-  osc.start(t0); osc.stop(t0+duration+0.05);
+  trackAudioNode(osc); osc.start(t0); osc.stop(t0+duration+0.05);
 }
 function suddenTone(freq, fromGain, toGain, duration){
   const c = ctx();
@@ -2547,7 +2649,7 @@ function suddenTone(freq, fromGain, toGain, duration){
   g.gain.setValueAtTime(toGain, t0+half);
   g.gain.setValueAtTime(toGain, t0+duration);
   osc.connect(g); g.connect(audioOut(c));
-  osc.start(t0); osc.stop(t0+duration+0.05);
+  trackAudioNode(osc); osc.start(t0); osc.stop(t0+duration+0.05);
 }
 function animateMeter(el, from, to, duration, sudden){
   const start = performance.now();
@@ -2586,9 +2688,9 @@ function playPianoNote(freq,startOffset,duration,velocity,voiceName,releaseOverr
   const cutoff=Math.min(11000,2600+Math.min(7000,7200*vel)*(0.72+0.28/register)); body.frequency.setValueAtTime(Math.max(900,cutoff),t0); body.frequency.exponentialRampToValueAtTime(Math.max(650,cutoff*.42),t0+duration+release*.75);
   const master=c.createGain(); master.gain.setValueAtTime(.0001,t0); master.gain.linearRampToValueAtTime(Math.min(.95,vel*.86),t0+v.attack); master.gain.exponentialRampToValueAtTime(.0001,t0+duration+release); body.connect(master); master.connect(audioOut(c));
   const detunes=voiceName==='grand'?(freq<180?[-.55,.55]:freq<520?[-1.35,0,1.35]:[-1,0,1]):[0];
-  v.harmonics.forEach((h,hi)=>detunes.forEach(cents=>{const osc=c.createOscillator(),g=c.createGain(); const B=v.inharmonic*Math.max(.55,Math.min(2.5,register)); const stretch=v.inharmonic?Math.sqrt(1+B*h.m*h.m):1; osc.type=h.m===1?'triangle':'sine'; osc.frequency.value=freq*h.m*stretch; osc.detune.value=cents; const peak=Math.max(.0002,vel*h.a/detunes.length),d=Math.max(.08,duration*h.d); g.gain.setValueAtTime(.0001,t0); g.gain.linearRampToValueAtTime(peak,t0+v.attack*(hi?1:.72)); g.gain.exponentialRampToValueAtTime(Math.max(.00004,peak*.025),t0+d*.78); g.gain.exponentialRampToValueAtTime(.0001,t0+d+release); osc.connect(g); g.connect(body); osc.start(t0); osc.stop(t0+d+release+.04);}));
-  if(v.hammer){const nd=.030,b=c.createBuffer(1,Math.max(1,Math.floor(c.sampleRate*nd)),c.sampleRate),data=b.getChannelData(0); for(let i=0;i<data.length;i++){const x=i/data.length,env=Math.pow(1-x,2.4);data[i]=(Math.random()*2-1)*env*(.65+.35*Math.sin(Math.PI*x));} const src=c.createBufferSource(),bp=c.createBiquadFilter(),hp=c.createBiquadFilter(),ng=c.createGain(); src.buffer=b; hp.type='highpass'; hp.frequency.value=Math.min(6500,Math.max(700,freq*1.7)); bp.type='bandpass'; bp.frequency.value=Math.min(5200,Math.max(1300,freq*3.1)); bp.Q.value=.75; ng.gain.setValueAtTime(vel*.055,t0); ng.gain.exponentialRampToValueAtTime(.0001,t0+nd); src.connect(hp); hp.connect(bp); bp.connect(ng); ng.connect(body); src.start(t0); src.stop(t0+nd+.01);}
-  if(v.body){[.42,.73].forEach((ratio,i)=>{const bloom=c.createOscillator(),bg=c.createGain(); bloom.type='sine'; bloom.frequency.value=Math.max(75,Math.min(420,freq*ratio)); bg.gain.setValueAtTime(.0001,t0); bg.gain.linearRampToValueAtTime(vel*v.body*(i?.45:1),t0+.025); bg.gain.exponentialRampToValueAtTime(.0001,t0+Math.min(1.7,duration+release*.85)); bloom.connect(bg); bg.connect(audioOut(c)); bloom.start(t0); bloom.stop(t0+1.8);});}
+  v.harmonics.forEach((h,hi)=>detunes.forEach(cents=>{const osc=c.createOscillator(),g=c.createGain(); const B=v.inharmonic*Math.max(.55,Math.min(2.5,register)); const stretch=v.inharmonic?Math.sqrt(1+B*h.m*h.m):1; osc.type=h.m===1?'triangle':'sine'; osc.frequency.value=freq*h.m*stretch; osc.detune.value=cents; const peak=Math.max(.0002,vel*h.a/detunes.length),d=Math.max(.08,duration*h.d); g.gain.setValueAtTime(.0001,t0); g.gain.linearRampToValueAtTime(peak,t0+v.attack*(hi?1:.72)); g.gain.exponentialRampToValueAtTime(Math.max(.00004,peak*.025),t0+d*.78); g.gain.exponentialRampToValueAtTime(.0001,t0+d+release); osc.connect(g); g.connect(body); trackAudioNode(osc); osc.start(t0); osc.stop(t0+d+release+.04);}));
+  if(v.hammer){const nd=.030,b=c.createBuffer(1,Math.max(1,Math.floor(c.sampleRate*nd)),c.sampleRate),data=b.getChannelData(0); for(let i=0;i<data.length;i++){const x=i/data.length,env=Math.pow(1-x,2.4);data[i]=(Math.random()*2-1)*env*(.65+.35*Math.sin(Math.PI*x));} const src=c.createBufferSource(),bp=c.createBiquadFilter(),hp=c.createBiquadFilter(),ng=c.createGain(); src.buffer=b; hp.type='highpass'; hp.frequency.value=Math.min(6500,Math.max(700,freq*1.7)); bp.type='bandpass'; bp.frequency.value=Math.min(5200,Math.max(1300,freq*3.1)); bp.Q.value=.75; ng.gain.setValueAtTime(vel*.055,t0); ng.gain.exponentialRampToValueAtTime(.0001,t0+nd); src.connect(hp); hp.connect(bp); bp.connect(ng); ng.connect(body); trackAudioNode(src); src.start(t0); src.stop(t0+nd+.01);}
+  if(v.body){[.42,.73].forEach((ratio,i)=>{const bloom=c.createOscillator(),bg=c.createGain(); bloom.type='sine'; bloom.frequency.value=Math.max(75,Math.min(420,freq*ratio)); bg.gain.setValueAtTime(.0001,t0); bg.gain.linearRampToValueAtTime(vel*v.body*(i?.45:1),t0+.025); bg.gain.exponentialRampToValueAtTime(.0001,t0+Math.min(1.7,duration+release*.85)); bloom.connect(bg); bg.connect(audioOut(c)); trackAudioNode(bloom); bloom.start(t0); bloom.stop(t0+1.8);});}
 }
 
 function playMelody(notes, startAt, noteLen, gap){
@@ -2612,6 +2714,8 @@ function playStaccatoPhrase(notes, level){
   let t=0;
   notes.forEach(n=>{ playPianoNote(NOTE_FREQ[n], t, noteLen, 0.68, pianoVoice, 0.04); t+=0.38; });
 }
+
+updateAuralDashboard();
 
 /* ======================= DYNAMICS ======================= */
 const DYN_LEVELS = [
@@ -2774,6 +2878,17 @@ async function loadPieceMap(){
 }
 
 /* ======================= AURAL ======================= */
+document.getElementById('auralStopBtn')?.addEventListener('click', ()=>{ stopAllAudio(); clearAuralProgress(); const st=document.getElementById('auralTransportStatus'); if(st) st.textContent='Stopped'; const h=document.getElementById('auralTransportHint'); if(h) h.textContent='Stopped safely. Replay whenever you are ready — no answer is revealed.'; });
+document.getElementById('auralReplayBtn')?.addEventListener('click', ()=>{ if(auralLastReplay) playAuralExample(auralLastReplay,auralLastLabel,auralLastDuration,auralLastContext,auralLastDuration); });
+function updateAuralDashboard(){
+  const pct=s=>s.total?Math.round(s.correct/s.total*100):0;
+  const vals={pulse:pct(pulseStats),pitch:pct(pitchStats),feature:pct(featureStats),rhythm:pct(rhythmStats)};
+  Object.entries(vals).forEach(([k,v])=>{const el=document.getElementById('auralDash'+k[0].toUpperCase()+k.slice(1));if(el)el.textContent=v+'%';});
+  const ranked=Object.entries(vals).filter(([k,v])=>v>0).sort((a,b)=>a[1]-b[1]);
+  const advice=document.getElementById('auralDashAdvice');
+  if(advice) advice.innerHTML=ranked.length?'<b>🎯 Pip’s next focus:</b> '+({pulse:'feel the strong beat and metre',pitch:'match the starting pitch and hear pitch direction',feature:'hear dynamics and articulation',rhythm:'echo the rhythm steadily'}[ranked[0][0]])+'.':'<b>🎯 Pip’s next focus:</b> Complete a few questions and I’ll find the listening skill that needs the most practice.';
+}
+
 let pulseAns=null, pulseStats={correct:0,total:0}, pulseClickFn=null;
 function pulseLevelOptions(){
   const level = document.getElementById('pulseLevel') ? document.getElementById('pulseLevel').value : 'medium';
@@ -2845,7 +2960,7 @@ function newPulse(){
   document.getElementById('pulseFeedback').textContent='Listen to “'+tune.name+'” and feel the strong beats.';
   document.getElementById('pulseFeedback').className='feedback';
   document.getElementById('pulsePlay').onclick = ()=>{
-    playPianoTune(tune, tempo, bars, .27);
+    playAuralExample(()=>playPianoTune(tune, tempo, bars, .27),'Test A · '+tune.name, null, 'Test A · Pulse & 2 or 3 time', (bars*beats*60/tempo));
     document.querySelectorAll('[data-pulse]').forEach(b=>b.disabled=false);
   };
 }
@@ -2856,7 +2971,7 @@ document.querySelectorAll('[data-pulse]').forEach(b=>b.addEventListener('click',
   if(parseInt(b.dataset.pulse)===pulseAns){ pulseStats.correct++; fb.textContent=cheer('Right on the beat.'); fb.className='feedback good'; }
   else { fb.textContent=encourage('It was actually in '+pulseAns+'.'); fb.className='feedback bad'; }
   document.getElementById('pulseScore').textContent = pulseStats.correct+'/'+pulseStats.total;
-  saveSessionScore('aural-pulse', pulseStats);
+  saveSessionScore('aural-pulse', pulseStats); updateAuralDashboard();
   document.querySelectorAll('[data-pulse]').forEach(x=>x.disabled=true);
   setTimeout(newPulse, 1200);
 }));
@@ -2890,8 +3005,8 @@ function newRhythm(){
   rhythmPattern = generateRhythmPattern(level);
   document.getElementById('rhythmViz').innerHTML='';
   document.getElementById('rhythmPlay').onclick = ()=>{
-    let t=0;
-    rhythmPattern.forEach(d=>{ if(d>0) clickAt(t,false); t+=Math.abs(d)*0.55; });
+    const duration=rhythmPattern.reduce((a,d)=>a+Math.abs(d)*0.55,0);
+    playAuralExample(()=>{ let t=0; rhythmPattern.forEach(d=>{ if(d>0) clickAt(t,false); t+=Math.abs(d)*0.55; }); },'Beyond Grade 1 · Rhythm echo',null,'Beyond Grade 1 · Rhythm echo',duration);
   };
 }
 document.getElementById('rhythmReveal').addEventListener('click', ()=>{
@@ -2913,12 +3028,12 @@ function markResult(kind, correct){
   const s = statsMap[kind];
   s.total++; if(correct) s.correct++;
   document.getElementById(scoreEl[kind]).textContent = s.correct+'/'+s.total;
-  saveSessionScore('aural-'+kind, s);
+  saveSessionScore('aural-'+kind, s); updateAuralDashboard();
   if(kind==='rhythm') newRhythm();
-  if(kind==='pitch') newPitch();
+  if(kind==='pitch'){ pitchPhraseNo=pitchPhraseNo>=3?1:pitchPhraseNo+1; newPitch(); }
 }
 
-let pitchPattern=[], pitchStats={correct:0,total:0};
+let pitchPattern=[], pitchStats={correct:0,total:0}, pitchPhraseNo=1;
 const PITCH_POOL = ['C4','D4','E4'];
 const PITCH_PATTERNS = [
   ['C4','D4','E4','D4','C4','E4','D4','C4'],
@@ -2934,16 +3049,34 @@ const PITCH_PATTERNS = [
   ['E4','D4','D4','C4','D4','C4','E4','D4'],
   ['C4','D4','E4','E4','D4','C4','D4','C4']
 ];
+function playPitchEchoReference(){
+  const level=document.getElementById('pitchLevel')?.value||'medium';
+  const gap=level==='easy'?.18:level==='hard'?.34:.24;
+  const noteLen=level==='easy'?.54:level==='hard'?.44:.50;
+  const c=ctx();
+  // ABRSM-style support: key chord → starting tonic → two-bar phrase.
+  playPianoNote(NOTE_FREQ.C4,0,.75,.34,pianoVoice,.10);
+  playPianoNote(NOTE_FREQ.E4,0,.75,.28,pianoVoice,.10);
+  playPianoNote(NOTE_FREQ.G4,0,.75,.28,pianoVoice,.10);
+  playPianoNote(NOTE_FREQ.C4,.78,.42,.48,pianoVoice,.08);
+  playMelody(pitchPattern,1.32,noteLen,gap);
+}
 function newPitch(){
   const idx=Math.floor(Math.random()*PITCH_PATTERNS.length);
   pitchPattern=[...PITCH_PATTERNS[idx]];
   document.getElementById('pitchViz').textContent='\u00A0';
-  document.getElementById('pitchPlay').onclick = ()=>{ playMelody(pitchPattern, 0, 0.5, 0.24); };
+  document.getElementById('pitchFeedback').textContent='Listen to the key-chord and starting tonic first. Then sing the phrase back without a pause.';
+  document.getElementById('pitchFeedback').className='feedback';
+  document.getElementById('pitchPlay').textContent='▶ Listen · phrase '+pitchPhraseNo+' of 3';
+  document.getElementById('pitchPlay').onclick = ()=>{
+    const duration=1.32+pitchPattern.length*((document.getElementById('pitchLevel')?.value==='easy'?.54:document.getElementById('pitchLevel')?.value==='hard'?.44:.50)+(document.getElementById('pitchLevel')?.value==='easy'?.18:document.getElementById('pitchLevel')?.value==='hard'?.34:.24));
+    playAuralExample(playPitchEchoReference,'Test B · Echo phrase '+pitchPhraseNo,null,'Test B · Singing echo · phrase '+pitchPhraseNo+' of 3',duration);
+  };
 }
 document.getElementById('pitchReveal').addEventListener('click', ()=>{
   document.getElementById('pitchViz').textContent = pitchPattern.map(n=>n.replace('4','')).join(' \u2013 ');
 });
-document.getElementById('pitchNew').addEventListener('click', newPitch);
+document.getElementById('pitchNew').addEventListener('click', ()=>{ pitchPhraseNo=pitchPhraseNo>=3?1:pitchPhraseNo+1; newPitch(); });
 document.getElementById('pitchLevel').addEventListener('change', newPitch);
 
 let detectiveAns=null, detectiveStats={correct:0,total:0};
@@ -2985,9 +3118,9 @@ function newDetective(){
   detectiveAns = round.pos;
   document.getElementById('detectiveFeedback').textContent='';
   document.getElementById('detectivePlay').onclick = ()=>{
-    const noteLen = level==='hard' ? 0.36 : 0.42;
+    playAuralExample(()=>{ const noteLen = level==='hard' ? 0.36 : 0.42;
     const end = playMelody(round.base, 0, noteLen, 0.18);
-    playMelody(round.altered, end+0.5, noteLen, 0.18);
+    playMelody(round.altered, end+0.5, noteLen, 0.18); },'Test C · Pitch change', null, 'Test C · Pitch-change location', 7.5);
     document.querySelectorAll('[data-det]').forEach(b=>b.disabled=false);
   };
 }
@@ -2998,7 +3131,7 @@ document.querySelectorAll('[data-det]').forEach(b=>b.addEventListener('click', (
   if(b.dataset.det===detectiveAns){ detectiveStats.correct++; fb.textContent=cheer('It was the '+detectiveAns+' of the phrase.'); fb.className='feedback good'; }
   else { fb.textContent=encourage('It was actually the '+detectiveAns+'.'); fb.className='feedback bad'; }
   document.getElementById('detectiveScore').textContent = detectiveStats.correct+'/'+detectiveStats.total;
-  saveSessionScore('aural-detective', detectiveStats);
+  saveSessionScore('aural-detective', detectiveStats); updateAuralDashboard();
   document.querySelectorAll('[data-det]').forEach(x=>x.disabled=true);
   setTimeout(newDetective, 1300);
 }));
@@ -3026,10 +3159,11 @@ function newFeature(){
   featureArtAns=tune.art; featureDynType=tune.dynType; featureDynAns=tune.dyn;
   featureDynAnswered=false; featureArtAnswered=false;
   document.querySelectorAll('[data-dyn],[data-feat]').forEach(b=>b.disabled=true);
-  document.getElementById('featureFeedback').textContent='Listen to “'+tune.name+'” as a piano extract. Then answer both questions.';
+  const artQ=document.getElementById('featureArtQuestion'); if(artQ) artQ.hidden=true;
+  document.getElementById('featureFeedback').textContent='Listen to the extract. First answer the dynamics question; articulation comes second.';
   document.getElementById('featureFeedback').className='feedback';
   document.getElementById('featurePlay').onclick=()=>{
-    const scale=level==='easy'?1.15:level==='hard'?.82:1;
+    playAuralExample(()=>{ const scale=level==='easy'?1.15:level==='hard'?.82:1;
     const ampBase=.23*scale; let t=0;
     tune.notes.forEach((n,i)=>{
       let amp=ampBase;
@@ -3041,6 +3175,7 @@ function newFeature(){
     });
     const bass='C3'; for(let i=0;i<8;i+=2) playPianoNote(NOTE_FREQ[bass],i*.40,.30,.045,pianoVoice,.03);
     document.querySelectorAll('[data-dyn],[data-feat]').forEach(b=>b.disabled=false);
+    },'Test D · '+tune.name, null, 'Test D · Dynamics + articulation', 3.3);
   };
 }
 function finishFeatureRound(){
@@ -3049,16 +3184,19 @@ function finishFeatureRound(){
   }
 }
 document.getElementById('featureLevel').addEventListener('change', newFeature);
+const initialArtQ=document.getElementById('featureArtQuestion'); if(initialArtQ) initialArtQ.hidden=true;
 document.querySelectorAll('[data-dyn]').forEach(b=>b.addEventListener('click', ()=>{
   featureStats.total++;
   const correct=b.dataset.dyn===featureDynAns; if(correct) featureStats.correct++;
   featureDynAnswered=true;
   document.querySelectorAll('[data-dyn]').forEach(x=>x.disabled=true);
+  const artQ=document.getElementById('featureArtQuestion'); if(artQ) artQ.hidden=false;
+  document.querySelectorAll('[data-feat]').forEach(x=>x.disabled=false);
   const fb=document.getElementById('featureFeedback');
-  fb.textContent=correct?cheer('Correct dynamics answer.') : encourage('The dynamics answer was '+featureDynAns+'.');
+  fb.textContent=correct?cheer('Correct dynamics answer. Now question 2: articulation.') : encourage('The dynamics answer was '+featureDynAns+'. Now question 2: articulation.');
   fb.className=correct?'feedback good':'feedback bad';
   document.getElementById('featureScore').textContent=featureStats.correct+'/'+featureStats.total;
-  saveSessionScore('aural-feature', featureStats); finishFeatureRound();
+  saveSessionScore('aural-feature', featureStats); updateAuralDashboard();
 }));
 document.querySelectorAll('[data-feat]').forEach(b=>b.addEventListener('click', ()=>{
   featureStats.total++;
@@ -3069,13 +3207,44 @@ document.querySelectorAll('[data-feat]').forEach(b=>b.addEventListener('click', 
   fb.textContent=correct?cheer('Correct articulation answer.') : encourage('The articulation was '+featureArtAns+'.');
   fb.className=correct?'feedback good':'feedback bad';
   document.getElementById('featureScore').textContent=featureStats.correct+'/'+featureStats.total;
-  saveSessionScore('aural-feature', featureStats); finishFeatureRound();
+  saveSessionScore('aural-feature', featureStats); updateAuralDashboard(); finishFeatureRound();
 }));
+let auralCoachIndex=0, auralCoachCorrect=0, auralCoachTypes=[];
+function startAuralCoach(){
+  const area=document.getElementById('auralCoachArea'); if(!area)return;
+  auralCoachIndex=0; auralCoachCorrect=0;
+  auralCoachTypes=['pulse','feature','pitch','pulse','feature'].sort(()=>Math.random()-.5);
+  renderAuralCoach();
+}
+function renderAuralCoach(){
+  const area=document.getElementById('auralCoachArea');
+  if(auralCoachIndex>=auralCoachTypes.length){
+    const pct=Math.round(auralCoachCorrect/auralCoachTypes.length*100);
+    area.innerHTML='<div class="feedback good"><b>Coached set complete.</b> '+auralCoachCorrect+'/5 · '+pct+'%. Pip will now focus your next practice on the weakest listening skill.</div>'; return;
+  }
+  const type=auralCoachTypes[auralCoachIndex];
+  area.innerHTML='<p class="sub"><b>Question '+(auralCoachIndex+1)+' of 5</b> · Listen first. You can replay before answering.</p>';
+  const play=document.createElement('button'); play.className='btn brass'; play.textContent='▶ Play example'; area.appendChild(play);
+  const opts=document.createElement('div'); opts.className='btnrow'; opts.style.marginTop='10px'; area.appendChild(opts);
+  let answer, explain, replay;
+  if(type==='pulse'){
+    const beats=Math.random()<.5?2:3,t=AURAL_TUNE_BANK[beats][Math.floor(Math.random()*AURAL_TUNE_BANK[beats].length)],tempo=88; answer=beats; replay=()=>playPianoTune(t,tempo,beats===2?4:3,.19); explain='The strong beat returns every '+beats+' pulses, so it is in '+beats+' time.';
+    play.onclick=()=>playAuralExample(replay,'Coach · pulse',5.5,'Pip Coach · 2 or 3 time',5.5);
+    [2,3].forEach(v=>{const b=document.createElement('button');b.className='btn outline sm';b.textContent=v+' time';b.onclick=()=>finishCoach(v===answer,explain);opts.appendChild(b);});
+  } else if(type==='pitch'){
+    const r=generateDetectiveRound('medium'); answer=r.pos; replay=()=>{const e=playMelody(r.base,0,.38,.15);playMelody(r.altered,e+.45,.38,.15);}; explain='One note changed near the '+(answer==='start'?'beginning':'end')+'.'; play.onclick=()=>playAuralExample(replay,'Coach · pitch change',7.2,'Pip Coach · pitch change',7.2); ['start','end'].forEach(v=>{const b=document.createElement('button');b.className='btn outline sm';b.textContent=v==='start'?'Near beginning':'Near end';b.onclick=()=>finishCoach(v===answer,explain);opts.appendChild(b);});
+  } else {
+    const t=FEATURE_TUNE_BANK[Math.floor(Math.random()*FEATURE_TUNE_BANK.length)]; answer=t.art; replay=()=>{let tm=0;t.notes.forEach((n,i)=>{let amp=t.dyn==='quiet'?.10:t.dyn==='loud'?.28:t.dyn==='sudden'?(i<4?.08:.28):(.08+.028*i);playPianoNote(NOTE_FREQ[n],tm,.34,amp,pianoVoice,t.art==='smooth'?.08:.025);tm+=.38;});}; explain='Listen for whether the notes connect smoothly or have clear gaps.'; play.onclick=()=>playAuralExample(replay,'Coach · musical feature',3.4,'Pip Coach · musical feature',3.4); ['smooth','detached'].forEach(v=>{const b=document.createElement('button');b.className='btn outline sm';b.textContent=v==='smooth'?'Smooth (legato)':'Detached (staccato)';b.onclick=()=>finishCoach(v===answer,explain);opts.appendChild(b);});
+  }
+  function finishCoach(ok,why){ if(ok)auralCoachCorrect++; opts.querySelectorAll('button').forEach(b=>b.disabled=true); const fb=document.createElement('div');fb.className=ok?'feedback good':'feedback bad';fb.style.marginTop='10px';fb.textContent=(ok?'✓ Correct. ':'✗ Not quite. ')+why;area.appendChild(fb);setTimeout(()=>{auralCoachIndex++;renderAuralCoach();},900);}
+}
+document.getElementById('auralCoachStart')?.addEventListener('click',startAuralCoach);
+
 function startMixedAural(){
   const area = document.getElementById('mixedAuralArea');
   let qNum = 0, correct = 0;
-  const total = 12;
-  const types = ['pulse','pulse','sing','pitch-pos','feature','pulse','sing','feature','pitch-pos','pulse','feature','sing'];
+  const types = ['pulse','sing','pitch-pos','feature','pulse','sing','feature','pitch-pos','pulse','feature'];
+  const total = types.length;
   // Shuffle task order while retaining balanced coverage.
   for(let i=types.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [types[i],types[j]]=[types[j],types[i]]; }
   function renderQ(){
@@ -3085,7 +3254,7 @@ function startMixedAural(){
       return;
     }
     const type = types[qNum];
-    area.innerHTML = `<p class="sub">Question ${qNum+1} of ${total} · ${type==='pulse'?'A · Clapping in time & time recognition':type==='sing'?'B · Singing three phrases':type==='pitch-pos'?'C · Notice the different note':'D · Musical details'}</p>`;
+    area.innerHTML = `<p class="sub">Question ${qNum+1} of ${total} · ${type==='pulse'?'A · Clapping in time & time recognition':type==='sing'?'B · Singing echo':type==='pitch-pos'?'C · Notice the different note':'D · Musical details'}</p>`;
     const playBtn = document.createElement('button'); playBtn.className='btn brass'; playBtn.textContent='Play piano extract';
     const optWrap = document.createElement('div'); optWrap.className='btnrow'; optWrap.style.marginTop='10px';
     area.appendChild(playBtn); area.appendChild(optWrap);
@@ -5001,8 +5170,8 @@ document.getElementById('crescExampleDown').addEventListener('click', ()=>{
 });
 
 /* ---- Legato & staccato training ---- */
-document.getElementById('hearLegatoBtn').addEventListener('click', ()=>playLegatoPhrase(['C4','D4','E4','F4','G4']));
-document.getElementById('hearStaccatoBtn').addEventListener('click', ()=>playStaccatoPhrase(['C4','D4','E4','F4','G4']));
+document.getElementById('hearLegatoBtn').addEventListener('click', ()=>playAuralExample(()=>playLegatoPhrase(['C4','D4','E4','F4','G4']),'Legato example',2.0,'Legato & staccato · legato example',2.0));
+document.getElementById('hearStaccatoBtn').addEventListener('click', ()=>playAuralExample(()=>playStaccatoPhrase(['C4','D4','E4','F4','G4']),'Staccato example',2.0,'Legato & staccato · staccato example',2.0));
 document.getElementById('artRecordBtn').addEventListener('click', async (ev)=>{
   const btn = ev.currentTarget; const fb = document.getElementById('artFeedback');
   const target = document.getElementById('artTarget').value;
