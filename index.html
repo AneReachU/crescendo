@@ -2693,7 +2693,7 @@ function playStaccatoPhrase(notes, level){
   notes.forEach(n=>{ playPianoNote(NOTE_FREQ[n], t, noteLen, 0.68, pianoVoice, 0.04); t+=0.38; });
 }
 
-updateAuralDashboard();
+/* AURAL dashboard refresh is intentionally deferred until its state variables are initialized. */
 
 /* ======================= DYNAMICS ======================= */
 const DYN_LEVELS = [
