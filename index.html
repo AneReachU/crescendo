@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- CRESCENDO v1.7 AUDIO POLISH | AURAL PIANO STUDIO | BOOT DIAGNOSTIC v1.5 | AURAL 2.2.1 polish: contextual console, ABRSM-style singing support, sequential Test D, robust 10-question drill -->
+<!-- CRESCENDO v1.8 PIP VOICE STUDIO | AUDIO POLISH | AURAL PIANO STUDIO | BOOT DIAGNOSTIC v1.5 | AURAL 2.2.1 polish: contextual console, ABRSM-style singing support, sequential Test D, robust 10-question drill -->
 <title>Crescendo — Mihira's Musical Universe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1712,6 +1712,14 @@ button.btn.outline{ -webkit-text-fill-color:currentColor; }
           <label class="switch"><input type="checkbox" id="pipVoiceToggle" checked><span class="slider"></span></label>
           <span>Pip speaks replies out loud</span>
         </div>
+        <div class="switch-row" style="margin-top:10px;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span style="font-weight:700;">Pip voice</span>
+          <select id="pipVoiceSelect" style="max-width:260px;flex:1;min-width:180px;">
+            <option value="auto">British mentor — best available</option>
+          </select>
+          <button class="btn outline sm" id="pipVoicePreview" type="button">▶ Preview voice</button>
+        </div>
+        <div class="mini" id="pipVoiceStatus" style="margin-top:6px;">Pip will use a warm, mature British mentor voice when your device provides one.</div>
         <div class="btnrow" style="margin-top:12px;flex-wrap:wrap;" id="pipSuggestions"></div>
         <div id="pipCoachDemo" class="card" style="margin-top:14px;background:var(--paper-2);display:none;">
           <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
@@ -4865,20 +4873,85 @@ function updateChatBubble(id, text){
   const win = document.getElementById('pipChatWindow'); win.scrollTop = win.scrollHeight;
 }
 let voicesLoaded = false;
+let pipSelectedVoice = 'auto';
+
+function getPipVoices(){
+  if(!('speechSynthesis' in window)) return [];
+  return window.speechSynthesis.getVoices().filter(v=>v && v.lang);
+}
+function scorePipVoice(v){
+  const n=(v.name||'').toLowerCase(), l=(v.lang||'').toLowerCase();
+  let s=0;
+  if(l==='en-gb') s+=55;
+  else if(l.startsWith('en-gb')) s+=45;
+  else if(l.startsWith('en')) s+=12;
+  if(/daniel|oliver|arthur|george|james|alfie|ryan|brian|alex/i.test(n)) s+=22;
+  if(/male|man|uk english male|british/i.test(n)) s+=15;
+  if(/samantha|victoria|female|woman|zira|karen/i.test(n)) s-=35;
+  if(/compact|enhanced|premium|natural/i.test(n)) s+=5;
+  return s;
+}
+function populatePipVoices(){
+  const sel=document.getElementById('pipVoiceSelect');
+  const status=document.getElementById('pipVoiceStatus');
+  if(!sel || !('speechSynthesis' in window)) return;
+  const voices=getPipVoices().sort((a,b)=>scorePipVoice(b)-scorePipVoice(a));
+  const current=localStorage.getItem('crescendo-pip-voice')||'auto';
+  pipSelectedVoice=current;
+  sel.innerHTML='<option value="auto">British mentor — best available</option>';
+  voices.forEach(v=>{
+    const opt=document.createElement('option');
+    opt.value=v.voiceURI || v.name;
+    opt.textContent=(v.name||'System voice')+' · '+(v.lang||'');
+    sel.appendChild(opt);
+  });
+  if([...sel.options].some(o=>o.value===current)) sel.value=current;
+  const best=voices[0];
+  if(status){
+    status.textContent = best
+      ? 'Best available: '+best.name+' ('+best.lang+'). Voice availability depends on this device/browser.'
+      : 'No speech voice is exposed yet. Try Preview after voices finish loading.';
+  }
+}
+function resolvePipVoice(){
+  const voices=getPipVoices();
+  if(!voices.length) return null;
+  if(pipSelectedVoice && pipSelectedVoice!=='auto'){
+    const exact=voices.find(v=>(v.voiceURI||v.name)===pipSelectedVoice);
+    if(exact) return exact;
+  }
+  return voices.sort((a,b)=>scorePipVoice(b)-scorePipVoice(a))[0] || null;
+}
 function speakAsPip(text){
   if(!('speechSynthesis' in window)) return;
-  if(!document.getElementById('pipVoiceToggle').checked) return;
+  const toggle=document.getElementById('pipVoiceToggle');
+  if(!toggle || !toggle.checked) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.pitch = 1.25; u.rate = 1.0;
-  const voices = window.speechSynthesis.getVoices();
-  const preferred = voices.find(v=>/female|samantha|victoria|uk english female|google us english/i.test(v.name));
-  if(preferred) u.voice = preferred;
+  const clean=String(text||'').replace(/\s+/g,' ').trim();
+  if(!clean) return;
+  const u=new SpeechSynthesisUtterance(clean);
+  u.lang='en-GB';
+  u.pitch=0.88;
+  u.rate=0.90;
+  u.volume=1.0;
+  const voice=resolvePipVoice();
+  if(voice){ u.voice=voice; u.lang=voice.lang || 'en-GB'; }
   window.speechSynthesis.speak(u);
 }
 if('speechSynthesis' in window){
-  window.speechSynthesis.onvoiceschanged = ()=>{ voicesLoaded = true; };
+  window.speechSynthesis.onvoiceschanged = ()=>{ voicesLoaded=true; populatePipVoices(); };
+  setTimeout(populatePipVoices,300);
 }
+document.getElementById('pipVoiceSelect')?.addEventListener('change',e=>{
+  pipSelectedVoice=e.target.value||'auto';
+  localStorage.setItem('crescendo-pip-voice',pipSelectedVoice);
+  populatePipVoices();
+});
+document.getElementById('pipVoicePreview')?.addEventListener('click',()=>{
+  const toggle=document.getElementById('pipVoiceToggle');
+  if(toggle) toggle.checked=true;
+  speakAsPip('Hello Mihira. I am Pip. Let us make some beautiful music together.');
+});
 
 async function sendPipMessage(){
   const input = document.getElementById('pipChatInput');
